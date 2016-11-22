@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/title_news_text"
-        style="@style/Text.ItemTitle"/>
+        style="@style/Text.ListItemTitle"/>
 
     <View
         style="@style/Line" />

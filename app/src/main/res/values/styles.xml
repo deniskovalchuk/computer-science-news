@@ -14,11 +14,22 @@
         <item name="android:textColor">@color/colorBlack</item>
     </style>
 
-    <style name="Text.ItemTitle">
+    <style name="Text.DetailTitle" parent="Text">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/title_text_size</item>
+    </style>
+
+    <style name="Text.ListItemTitle">
         <item name="android:textSize">@dimen/item_title_text_size</item>
     </style>
 
-    <style name="Text.Standart">
+    <style name="Text.DetailTag">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/standart_text_size</item>
+        <item name="android:background">@color/colorTag</item>
+    </style>
+
+    <style name="Text.DetailContent">
         <item name="android:textSize">@dimen/standart_text_size</item>
     </style>
 

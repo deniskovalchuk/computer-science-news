@@ -5,4 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/fragment_detail_title_text"
+        style="@style/Text.DetailTitle"/>
+
+    <TextView
+        android:id="@+id/fragment_detail_tag_text"
+        style="@style/Text.DetailTag" />
+
+    <TextView
+        android:id="@+id/fragment_detail_date_text"
+        style="@style/Text.DetailTitle"/>
+
+    <TextView
+        android:id="@+id/fragment_detail_content_text"
+        style="@style/Text.DetailContent"/>
 </LinearLayout>

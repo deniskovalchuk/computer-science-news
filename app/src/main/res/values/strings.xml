@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Новости</string>
+    <string name="default_title">Новость от </string>
 </resources>
