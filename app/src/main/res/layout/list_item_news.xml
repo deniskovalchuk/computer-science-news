@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/standart_padding"
+    android:minHeight="56dp">
+
+    <TextView
+        android:id="@+id/title_news_text"
+        style="@style/Text.ItemTitle"/>
+
+    <View
+        style="@style/Line" />
+
+</LinearLayout>
