@@ -8,13 +8,16 @@
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
     android:showDividers="middle"
+    android:clipToPadding="false"
     tools:context="cs.petrsu.ru.imitnews.NewsActivity">
 
     <FrameLayout
         android:id="@+id/fragment_list_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:outlineProvider="bounds"
+        android:elevation="2dp"/>
 
     <FrameLayout
         android:id="@+id/fragment_detail_container"

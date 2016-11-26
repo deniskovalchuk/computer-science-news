@@ -18,7 +18,7 @@
             android:id="@+id/fragment_detail_tag_text" />
 
         <TextView
-            style="@style/Text.DetailTitle"
+            style="@style/Text.DetailDate"
             android:id="@+id/fragment_detail_date_text" />
 
         <TextView

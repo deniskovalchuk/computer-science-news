@@ -32,12 +32,18 @@
         <item name="android:layout_marginTop">@dimen/list_item_margin</item>
         <item name="android:layout_marginBottom">@dimen/list_item_margin</item>
         <item name="android:layout_marginRight">@dimen/list_item_margin</item>
+        <item name="android:textColor">@color/colorBlack</item>
     </style>
 
     <style name="Text.DetailTag">
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/standart_text_size</item>
         <item name="android:background">@color/colorTag</item>
+    </style>
+
+    <style name="Text.DetailDate">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/standart_text_size</item>
     </style>
 
     <style name="Text.DetailContent">
