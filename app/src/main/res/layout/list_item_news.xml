@@ -2,12 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:minHeight="56dp">
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/title_news_text"
-        style="@style/Text.ListItemTitle"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            style="@style/ImageIcon"
+            android:id="@+id/ic_news"
+            android:src="@drawable/ic_news"/>
+
+        <TextView
+            style="@style/Text.ListItemTitle"
+            android:id="@+id/title_news_text" />
+    </LinearLayout>
 
     <View
         style="@style/Line" />

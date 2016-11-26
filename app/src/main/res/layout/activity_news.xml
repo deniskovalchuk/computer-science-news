@@ -4,6 +4,10 @@
     android:id="@+id/activity_news"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="horizontal"
+    android:showDividers="middle"
     tools:context="cs.petrsu.ru.imitnews.NewsActivity">
 
     <FrameLayout

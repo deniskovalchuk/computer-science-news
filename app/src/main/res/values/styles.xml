@@ -8,6 +8,11 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
     <style name="Text">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -23,8 +28,10 @@
         <item name="android:textSize">@dimen/item_title_text_size</item>
         <item name="android:maxLength">24</item>
         <item name="android:ellipsize">end</item>
-        <item name="android:maxLines">2</item>
-        <item name="android:layout_margin">@dimen/item_title_margin</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:layout_marginTop">@dimen/list_item_margin</item>
+        <item name="android:layout_marginBottom">@dimen/list_item_margin</item>
+        <item name="android:layout_marginRight">@dimen/list_item_margin</item>
     </style>
 
     <style name="Text.DetailTag">
@@ -37,9 +44,16 @@
         <item name="android:textSize">@dimen/standart_text_size</item>
     </style>
 
+    <style name="ImageIcon">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">@dimen/list_item_margin</item>
+    </style>
+
     <style name="Line">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
-        <item name="android:background">@color/colorBlack</item>
+        <item name="android:background">@color/colorLightGrey</item>
+        <item name="android:layout_marginLeft">@dimen/list_item_margin</item>
     </style>
 </resources>
