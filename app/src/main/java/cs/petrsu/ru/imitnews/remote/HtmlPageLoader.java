@@ -9,7 +9,7 @@ import org.jsoup.nodes.Document;
  * Email: deniskk25@gmail.com
  */
 
-public class HtmlPageLoader extends android.content.AsyncTaskLoader<Document> {
+public class HtmlPageLoader extends android.content.AsyncTaskLoader {
     private HtmlPage htmlPage;
 
     public HtmlPageLoader(Context context, String url) {

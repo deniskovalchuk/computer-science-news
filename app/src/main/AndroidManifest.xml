@@ -11,13 +11,23 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".NewsActivity"
-            android:theme="@style/AppTheme">
+        <activity
+            android:name=".NewsListActivity"
+            android:label="@string/title_news_list"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".NewsDetailActivity"
+            android:label="@string/title_news_detail"
+            android:parentActivityName=".NewsListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="cs.petrsu.ru.imitnews.NewsListActivity" />
         </activity>
     </application>
 

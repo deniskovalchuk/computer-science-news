@@ -1,11 +1,10 @@
 package cs.petrsu.ru.imitnews;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -13,62 +12,43 @@ import android.widget.TextView;
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
 
-/**
- * Created by Kovalchuk Denis on 22.11.16.
- * Email: deniskk25@gmail.com
- */
-
 public class NewsDetailFragment extends Fragment {
-    private static final String TAG = "NewsDetailFragment";
-    private static final String ARG_NEWS_POSITION = "newsPosition";
+    public static final String ARG_NEWS_ID = "item_id";
     private News news;
-
-    private TextView newsTitleTextView;
-    private TextView newsDateTextView;
-    private TextView newsTagTextView;
-    private TextView newsContentTextView;
 
     public static NewsDetailFragment newInstance(int position) {
         Bundle arguments = new Bundle();
-        arguments.putInt(ARG_NEWS_POSITION, position);
-        NewsDetailFragment newsDetailFragment = new NewsDetailFragment();
-        newsDetailFragment.setArguments(arguments);
-        return newsDetailFragment;
+        arguments.putInt(ARG_NEWS_ID, position);
+        NewsDetailFragment newDetailFragment = new NewsDetailFragment();
+        newDetailFragment.setArguments(arguments);
+        return newDetailFragment;
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
 
-        int position = getArguments().getInt(ARG_NEWS_POSITION);
+        int position = getArguments().getInt(ARG_NEWS_ID);
         news = NewsLab.get(getContext()).getNews(position);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_detail_news, container, false);
-
-        newsTitleTextView = (TextView) view.findViewById(R.id.fragment_detail_title_text);
-        newsDateTextView = (TextView) view.findViewById(R.id.fragment_detail_date_text);
-        newsTagTextView = (TextView) view.findViewById(R.id.fragment_detail_tag_text);
-        newsContentTextView = (TextView) view.findViewById(R.id.fragment_detail_content_text);
-        updateUI();
-
-        return view;
+        Activity activity = this.getActivity();
+        CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+        if (appBarLayout != null) {
+            appBarLayout.setTitle(getString(R.string.title_news_detail));
+        }
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.fragment_detail_news, menu);
-    }
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.news_detail, container, false);
 
-    private void updateUI() {
-        newsTitleTextView.setText(news.getTitle());
-        newsDateTextView.setText(news.getDate());
-        newsTagTextView.setText(news.getTag());
-        newsContentTextView.setText(news.getContent());
+        if (news != null) {
+            ((TextView) rootView.findViewById(R.id.fragment_detail_title_text)).setText(news.getTitle());
+            ((TextView) rootView.findViewById(R.id.fragment_detail_tag_text)).setText(news.getTag());
+            ((TextView) rootView.findViewById(R.id.fragment_detail_content_text)).setText(news.getContent());
+            ((TextView) rootView.findViewById(R.id.fragment_detail_date_text)).setText(news.getDate());
+        }
+
+        return rootView;
     }
 }
