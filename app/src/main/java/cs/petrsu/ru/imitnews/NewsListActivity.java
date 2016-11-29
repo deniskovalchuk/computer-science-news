@@ -5,11 +5,13 @@ import android.content.Intent;
 import android.content.Loader;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,11 @@ import cs.petrsu.ru.imitnews.news.NewsLab;
 import cs.petrsu.ru.imitnews.parser.NewsParser;
 import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
 
+/**
+ * Created by Kovalchuk Denis on 28.11.16.
+ * Email: deniskk25@gmail.com
+ */
+
 public class NewsListActivity extends AppCompatActivity
         implements android.app.LoaderManager.LoaderCallbacks<Document> {
     private static final String TAG = "NewsListActivity";
@@ -36,6 +43,8 @@ public class NewsListActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_list);
 
+        newsLab = NewsLab.get(NewsListActivity.this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
@@ -44,27 +53,35 @@ public class NewsListActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
             }
         });
-
-        newsLab = NewsLab.get(NewsListActivity.this);
-        getLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
 
         if (findViewById(R.id.new_detail_container) != null) {
             isTwoPane = true;
         }
+
+        if (newsLab.getNewsList().isEmpty()) {
+            getLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
+        } else {
+            onBindRecyclerView();
+        }
+    }
+
+    private void onBindRecyclerView() {
+        View recyclerView = findViewById(R.id.new_list);
+        assert recyclerView != null;
+        setupRecyclerView((RecyclerView) recyclerView);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(NewsLab.get(this).getListNews()));
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(newsLab.getNewsList()));
     }
 
     @Override
     public Loader<Document> onCreateLoader(int i, Bundle bundle) {
         if (i == PAGE_LOADER) {
-            return new HtmlPageLoader(NewsListActivity.this, NewsParser.getUrl());
+            return new HtmlPageLoader(this, NewsParser.getUrl());
         }
         return null;
     }
@@ -72,12 +89,19 @@ public class NewsListActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Document> loader, Document document) {
         if (loader.getId() == PAGE_LOADER) {
-            NewsParser newsParser = new NewsParser(NewsListActivity.this, document);
-            newsLab.setListNews(newsParser.getListNews());
-
-            View recyclerView = findViewById(R.id.new_list);
-            assert recyclerView != null;
-            setupRecyclerView((RecyclerView) recyclerView);
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.activity_news_list),
+                    "Not connection",
+                    Snackbar.LENGTH_INDEFINITE);
+            if (document == null) {
+                snackbar.show();
+                return;
+            }
+            if (snackbar.isShown()) {
+                snackbar.dismiss();
+            }
+            NewsParser newsParser = new NewsParser(this, document);
+            newsLab.setNewsList(newsParser.getListNews());
+            onBindRecyclerView();
         }
     }
 
@@ -88,11 +112,16 @@ public class NewsListActivity extends AppCompatActivity
 
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
-
         private final List<News> newsList;
 
         public SimpleItemRecyclerViewAdapter(List<News> newsList) {
             this.newsList = newsList;
+            if (isTwoPane) {
+                NewsDetailFragment fragment = NewsDetailFragment.newInstance(0);
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.new_detail_container, fragment)
+                        .commit();
+            }
         }
 
         @Override
@@ -106,7 +135,6 @@ public class NewsListActivity extends AppCompatActivity
         public void onBindViewHolder(final ViewHolder holder, final int position) {
             holder.news = newsList.get(position);
             holder.titleTextView.setText(newsList.get(position).getTitle());
-
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -115,6 +143,7 @@ public class NewsListActivity extends AppCompatActivity
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.new_detail_container, fragment)
                                 .commit();
+
                     } else {
                         Context context = v.getContext();
                         Intent intent = NewsDetailActivity.newIntent(context, position);
@@ -129,12 +158,12 @@ public class NewsListActivity extends AppCompatActivity
             return newsList.size();
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        class ViewHolder extends RecyclerView.ViewHolder {
             public final View view;
             public final TextView titleTextView;
             public News news;
 
-            public ViewHolder(View view) {
+            ViewHolder(View view) {
                 super(view);
                 this.view = view;
                 titleTextView = (TextView) view.findViewById(R.id.title_news_text);

@@ -12,7 +12,13 @@ import android.widget.TextView;
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
 
+/**
+ * Created by Kovalchuk Denis on 28.11.16.
+ * Email: deniskk25@gmail.com
+ */
+
 public class NewsDetailFragment extends Fragment {
+    private static final String TAG = "NewsDetailFragment";
     public static final String ARG_NEWS_ID = "item_id";
     private News news;
 
@@ -43,8 +49,13 @@ public class NewsDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.news_detail, container, false);
 
         if (news != null) {
+            if (news.getTag().isEmpty()) {
+                ((TextView) rootView.findViewById(R.id.fragment_detail_tag_text)).setVisibility(View.GONE);
+            } else {
+                ((TextView) rootView.findViewById(R.id.fragment_detail_tag_text)).setText(news.getTag());
+            }
+
             ((TextView) rootView.findViewById(R.id.fragment_detail_title_text)).setText(news.getTitle());
-            ((TextView) rootView.findViewById(R.id.fragment_detail_tag_text)).setText(news.getTag());
             ((TextView) rootView.findViewById(R.id.fragment_detail_content_text)).setText(news.getContent());
             ((TextView) rootView.findViewById(R.id.fragment_detail_date_text)).setText(news.getDate());
         }

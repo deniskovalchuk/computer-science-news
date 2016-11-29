@@ -12,10 +12,10 @@ import java.util.List;
 
 public class NewsLab {
     private static NewsLab newsLab;
-    private List<News> listNews;
+    private List<News> newsList;
 
     private NewsLab() {
-        listNews = new ArrayList<>();
+        newsList = new ArrayList<>();
     }
 
     public static NewsLab get(Context context) {
@@ -25,19 +25,19 @@ public class NewsLab {
         return newsLab;
     }
 
-    public List<News> getListNews() {
-        return listNews;
+    public List<News> getNewsList() {
+        return newsList;
     }
 
-    public void setListNews(List<News> news) {
-        this.listNews = news;
+    public void setNewsList(List<News> news) {
+        this.newsList = news;
     }
 
     public News getNews(int position) {
-        return listNews.get(position);
+        return newsList.get(position);
     }
 
     public void addNews(News news) {
-        this.listNews.add(news);
+        this.newsList.add(news);
     }
 }

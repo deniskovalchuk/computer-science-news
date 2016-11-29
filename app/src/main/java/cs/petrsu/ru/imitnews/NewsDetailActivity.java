@@ -11,12 +11,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
+/**
+ * Created by Kovalchuk Denis on 28.11.16.
+ * Email: deniskk25@gmail.com
+ */
+
 public class NewsDetailActivity extends AppCompatActivity {
-    private static final String EXTRA_POSITION = "item_id";
+    private static final String TAG = "NewsDetailActivity";
+    private static final String EXTRA_NEWS_ID = "item_id";
 
     public static Intent newIntent(Context context, int position) {
         Intent intent = new Intent(context, NewsDetailActivity.class);
-        intent.putExtra(EXTRA_POSITION, position);
+        intent.putExtra(EXTRA_NEWS_ID, position);
         return intent;
     }
 
@@ -41,10 +47,10 @@ public class NewsDetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        int position = getIntent().getIntExtra(EXTRA_POSITION, 0);
+        int newsId = getIntent().getIntExtra(EXTRA_NEWS_ID, 0);
 
         if (savedInstanceState == null) {
-            NewsDetailFragment fragment = NewsDetailFragment.newInstance(position);
+            NewsDetailFragment fragment = NewsDetailFragment.newInstance(newsId);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.new_detail_container, fragment)
                     .commit();
