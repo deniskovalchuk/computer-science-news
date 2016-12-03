@@ -3,6 +3,10 @@
     <dimen name="standart_margin">16dp</dimen>
     <dimen name="list_item_margin">16dp</dimen>
 
+    <!-- AppBar margins -->
+    <dimen name="text_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
     <!-- paddings -->
     <dimen name="standart_padding">16dp</dimen>
 
@@ -10,8 +14,8 @@
     <dimen name="title_text_size">24sp</dimen>
     <dimen name="standart_text_size">16sp</dimen>
     <dimen name="item_title_text_size">16sp</dimen>
-    <dimen name="fab_margin">16dp</dimen>
-    <dimen name="app_bar_height">200dp</dimen>
+
+    <!-- AppBar -->
+    <dimen name="app_bar_height">290dp</dimen>
     <dimen name="item_width">200dp</dimen>
-    <dimen name="text_margin">16dp</dimen>
 </resources>
