@@ -1,7 +1,6 @@
 package cs.petrsu.ru.imitnews.parser;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,7 +22,6 @@ public class NewsParser {
     private static final String url = "http://cs.petrsu.ru";
     private Context context;
     private Document htmlPage;
-    private Elements newsHtml;
 
     public NewsParser(Context context, Document htmlPage) {
         this.context = context;
@@ -37,31 +35,28 @@ public class NewsParser {
     public List<News> getListNews() {
         List<News> newsList = new ArrayList<>();
 
-        newsHtml = htmlPage.select("div[id]");
+        Elements newsHtml = htmlPage.select("div[id]");
         for (Element currentNewsHtml : newsHtml) {
             News news = new News();
 
-            // Title, date, tag
+            // Get news div
             Element newsHeadline = currentNewsHtml.select("div").get(1);
             // Get and set a date
-            String date = newsHeadline.select("b").text();
-            news.setDate(date);
+            news.setDate(newsHeadline.select("b").text());
 
             // Get and set a title
             String title = newsHeadline.select("span.title").text();
-            if (title == "") {
-                news.setTitle(context.getString(R.string.default_title) + date);
+            if (title.isEmpty()) {
+                news.setTitle(context.getString(R.string.default_title) + news.getDate());
                 news.setDate("");
             } else {
                 news.setTitle(title);
             }
 
-            // Get and set a tag
+            // Get and set a tag 'new'
             news.setTag(newsHeadline.select("span[style]").text());
-
-            // Content
-            Element newsContent = currentNewsHtml.select("div").get(2);
-            news.setContent(newsContent.text());
+            // Get and set news content
+            news.setContent(currentNewsHtml.select("div").get(2).text());
             newsList.add(news);
         }
         return newsList;

@@ -5,7 +5,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="@dimen/standart_padding">
+        android:padding="@dimen/standard_padding">
 
         <TextView
             android:id="@+id/fragment_detail_tag_text"
@@ -24,7 +24,7 @@
         <TextView
             android:id="@+id/fragment_detail_date_text"
             style="@style/Text.DetailDate"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_below="@id/fragment_detail_content_text" />
     </RelativeLayout>
 </android.support.v4.widget.NestedScrollView>

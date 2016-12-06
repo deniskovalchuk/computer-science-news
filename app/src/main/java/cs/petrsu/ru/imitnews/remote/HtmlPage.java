@@ -13,11 +13,9 @@ import java.io.IOException;
  */
 
 public class HtmlPage {
-    private String url;
-    private Context context;
+    private final String url;
 
-    HtmlPage(Context context, String url) {
-        this.context = context;
+    HtmlPage(String url) {
         this.url = url;
     }
 

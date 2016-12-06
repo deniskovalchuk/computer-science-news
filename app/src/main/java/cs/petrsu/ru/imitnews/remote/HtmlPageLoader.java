@@ -14,7 +14,7 @@ public class HtmlPageLoader extends android.content.AsyncTaskLoader {
 
     public HtmlPageLoader(Context context, String url) {
         super(context);
-        htmlPage = new HtmlPage(context, url);
+        htmlPage = new HtmlPage(url);
     }
 
     @Override

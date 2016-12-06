@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+    <ImageView
+        style="@style/ImageIcon"
+        android:id="@+id/ic_news"
+        android:src="@drawable/ic_news" />
 
-        <ImageView
-            style="@style/ImageIcon"
-            android:id="@+id/ic_news"
-            android:src="@drawable/ic_news"/>
-
-        <TextView
-            style="@style/Text.ListItemTitle"
-            android:id="@+id/title_news_text" />
-    </LinearLayout>
+    <TextView
+        style="@style/Text.ListItemTitle"
+        android:id="@+id/title_news_text"
+        android:layout_toEndOf="@id/ic_news" />
 
     <View
-        style="@style/Line" />
-</LinearLayout>
+        style="@style/Line"
+        android:layout_below="@id/ic_news"/>
+
+</RelativeLayout>
