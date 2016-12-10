@@ -1,7 +1,5 @@
 package cs.petrsu.ru.imitnews.remote;
 
-import android.content.Context;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 

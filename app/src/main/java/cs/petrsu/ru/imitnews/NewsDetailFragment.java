@@ -7,13 +7,19 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ShareCompat;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
+import cs.petrsu.ru.imitnews.parser.SafeURLSpan;
+import cs.petrsu.ru.imitnews.parser.UILImageGetter;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.
@@ -63,15 +69,10 @@ public class NewsDetailFragment extends Fragment {
         });
 
         if (news != null) {
-            if (news.getTag().isEmpty()) {
-                ((TextView) rootView.findViewById(R.id.fragment_detail_tag_text)).setVisibility(View.GONE);
-            } else {
-                ((TextView) rootView.findViewById(R.id.fragment_detail_tag_text)).setText(news.getTag());
-            }
-
-            ((TextView) rootView.findViewById(R.id.fragment_detail_title_text)).setText(news.getTitle());
-            ((TextView) rootView.findViewById(R.id.fragment_detail_content_text)).setText(news.getContent());
-            ((TextView) rootView.findViewById(R.id.fragment_detail_date_text)).setText(news.getDate());
+            TextView newsTextView = (TextView) rootView.findViewById(R.id.fragment_detail_content_text);
+            newsTextView.setLinksClickable(true);
+            newsTextView.setMovementMethod(LinkMovementMethod.getInstance());
+            newsTextView.setText(SafeURLSpan.parseSafeHtml(getActivity(), newsTextView, news.getContent()));
         }
 
         return rootView;

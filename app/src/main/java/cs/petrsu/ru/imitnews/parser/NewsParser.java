@@ -2,6 +2,7 @@ package cs.petrsu.ru.imitnews.parser;
 
 import android.content.Context;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -35,31 +36,36 @@ public class NewsParser {
     public List<News> getListNews() {
         List<News> newsList = new ArrayList<>();
 
-        Elements newsHtml = htmlPage.select("div[id]");
-        for (Element currentNewsHtml : newsHtml) {
+        Elements allNews = htmlPage.select("div[id]");
+        for (Element currentNews : allNews) {
             News news = new News();
 
             // Get news div
-            Element newsHeadline = currentNewsHtml.select("div").get(1);
-            // Get and set a date
-            news.setDate(newsHeadline.select("b").text());
+            Element newsHtml = currentNews.select("div").get(0);
+            // Set title for news recyclerview
+            setTitleNews(news, newsHtml);
 
-            // Get and set a title
-            String title = newsHeadline.select("span.title").text();
-            if (title.isEmpty()) {
-                news.setTitle(context.getString(R.string.default_title) + news.getDate());
-                news.setDate("");
-            } else {
-                news.setTitle(title);
+            // Set correct image url
+            int countImages = currentNews.select("img").size();
+            for (int i = 0; i < countImages; i++) {
+                String imageUrl = currentNews.select("img").get(i).attr("src");
+                currentNews.html(currentNews.toString().replace(imageUrl, url + imageUrl));
             }
 
-            // Get and set a tag 'new'
-            news.setTag(newsHeadline.select("span[style]").text());
-            // Get and set news content
-            news.setContent(currentNewsHtml.select("div").get(2).text());
+            news.setContent(currentNews.toString());
             newsList.add(news);
         }
         return newsList;
+    }
+
+    private void setTitleNews(News news, Element newsHeadline) {
+        String date = newsHeadline.select("b").text();
+        String title = newsHeadline.select("span.title").text();
+        if (title.isEmpty()) {
+            news.setTitle(context.getString(R.string.default_title) + date);
+        } else {
+            news.setTitle(title);
+        }
     }
 }
 

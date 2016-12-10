@@ -15,6 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import org.jsoup.nodes.Document;
 
 import java.util.List;
@@ -41,6 +44,8 @@ public class NewsListActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_list);
 
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
+        ImageLoader.getInstance().init(config);
         newsLab = NewsLab.get(NewsListActivity.this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
