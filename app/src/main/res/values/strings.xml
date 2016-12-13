@@ -5,4 +5,7 @@
     <string name="news_icon">news_icon</string>
     <string name="petrsu_logo">petrsu_logo</string>
     <string name="send_to">Поделиться новостью...</string>
+    <string name="not_connection">Not connection</string>
+    <string name="find">find</string>
+    <string name="share">share</string>
 </resources>

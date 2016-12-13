@@ -5,18 +5,18 @@ import android.content.Intent;
 import android.content.Loader;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ShareCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import org.jsoup.nodes.Document;
 
@@ -38,15 +38,15 @@ public class NewsListActivity extends AppCompatActivity
     private static final int PAGE_LOADER = 0;
     private boolean isTwoPane;
     private NewsLab newsLab;
+    private int newsIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_list);
 
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
-        ImageLoader.getInstance().init(config);
         newsLab = NewsLab.get();
+        newsIndex = 0;
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -54,16 +54,36 @@ public class NewsListActivity extends AppCompatActivity
 
         if (findViewById(R.id.new_detail_container) != null) {
             isTwoPane = true;
-        } else {
-            // Show fab only for two pane format
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            fab.setVisibility(View.INVISIBLE);
         }
 
         if (newsLab.getNewsList().isEmpty()) {
             getLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
         } else {
             onBindRecyclerView();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.news_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_find:
+                return true;
+            case R.id.menu_share:
+                Intent intent = ShareCompat.IntentBuilder.from(this).setType("text/plain")
+                        .setText(newsLab.getNews(newsIndex).getContent())
+                        .getIntent();
+                intent = Intent.createChooser(intent, getString(R.string.send_to));
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -89,7 +109,7 @@ public class NewsListActivity extends AppCompatActivity
     public void onLoadFinished(Loader<Document> loader, Document document) {
         if (loader.getId() == PAGE_LOADER) {
             Snackbar snackbar = Snackbar.make(findViewById(R.id.activity_news_list),
-                    "Not connection",
+                    getString(R.string.not_connection),
                     Snackbar.LENGTH_INDEFINITE);
             if (document == null) {
                 snackbar.show();
@@ -115,7 +135,7 @@ public class NewsListActivity extends AppCompatActivity
         public SimpleItemRecyclerViewAdapter(List<News> newsList) {
             this.newsList = newsList;
             if (isTwoPane) {
-                NewsDetailFragment fragment = NewsDetailFragment.newInstance(0);
+                NewsDetailFragment fragment = NewsDetailFragment.newInstance(newsIndex);
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.new_detail_container, fragment)
                         .commit();
@@ -135,9 +155,11 @@ public class NewsListActivity extends AppCompatActivity
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    newsIndex = position;
                     if (isTwoPane) {
                         NewsDetailFragment fragment = NewsDetailFragment.newInstance(position);
-                        getSupportFragmentManager().beginTransaction()
+                        getSupportFragmentManager()
+                                .beginTransaction()
                                 .replace(R.id.new_detail_container, fragment)
                                 .commit();
                     } else {
@@ -155,9 +177,9 @@ public class NewsListActivity extends AppCompatActivity
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
+            final View view;
             private final TextView titleTextView;
             private News news;
-            final View view;
 
             ViewHolder(View view) {
                 super(view);

@@ -3,10 +3,16 @@ package cs.petrsu.ru.imitnews;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.app.AppCompatActivity;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ShareCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+
+import cs.petrsu.ru.imitnews.news.News;
+import cs.petrsu.ru.imitnews.news.NewsLab;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.
@@ -36,11 +42,24 @@ public class NewsDetailActivity extends AppCompatActivity {
         }
 
         int newsId = getIntent().getIntExtra(EXTRA_NEWS_ID, 0);
+        final News news = NewsLab.get().getNews(newsId);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = ShareCompat.IntentBuilder.from(NewsDetailActivity.this)
+                        .setType("text/plain")
+                        .setText(news.getContent())
+                        .getIntent();
+                intent = intent.createChooser(intent, getString(R.string.send_to));
+                startActivity(intent);
+            }
+        });
 
         if (savedInstanceState == null) {
             NewsDetailFragment fragment = NewsDetailFragment.newInstance(newsId);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.new_detail_container, fragment)
+            getSupportFragmentManager().beginTransaction().add(R.id.new_detail_container, fragment)
                     .commit();
         }
     }
