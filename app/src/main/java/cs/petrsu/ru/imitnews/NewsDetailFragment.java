@@ -7,19 +7,15 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ShareCompat;
-import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
 import cs.petrsu.ru.imitnews.parser.SafeURLSpan;
-import cs.petrsu.ru.imitnews.parser.UILImageGetter;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.
@@ -44,7 +40,7 @@ public class NewsDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         int position = getArguments().getInt(ARG_NEWS_ID);
-        news = NewsLab.get(getContext()).getNews(position);
+        news = NewsLab.get().getNews(position);
         Activity activity = this.getActivity();
         CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
         if (appBarLayout != null) {

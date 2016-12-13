@@ -8,8 +8,6 @@ package cs.petrsu.ru.imitnews.news;
 public class News {
     private String title;
     private String content;
-    private String date;
-    private String tag;
 
     public String getTitle() {
         return title;
@@ -25,21 +23,5 @@ public class News {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 }

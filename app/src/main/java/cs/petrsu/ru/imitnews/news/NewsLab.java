@@ -1,7 +1,5 @@
 package cs.petrsu.ru.imitnews.news;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +16,7 @@ public class NewsLab {
         newsList = new ArrayList<>();
     }
 
-    public static NewsLab get(Context context) {
+    public static NewsLab get() {
         if (newsLab == null) {
             newsLab = new NewsLab();
         }
@@ -35,9 +33,5 @@ public class NewsLab {
 
     public News getNews(int position) {
         return newsList.get(position);
-    }
-
-    public void addNews(News news) {
-        this.newsList.add(news);
     }
 }

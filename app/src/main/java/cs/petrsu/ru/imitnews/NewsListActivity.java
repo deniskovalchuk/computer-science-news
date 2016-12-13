@@ -46,7 +46,7 @@ public class NewsListActivity extends AppCompatActivity
 
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
         ImageLoader.getInstance().init(config);
-        newsLab = NewsLab.get(NewsListActivity.this);
+        newsLab = NewsLab.get();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -98,8 +98,7 @@ public class NewsListActivity extends AppCompatActivity
             if (snackbar.isShown()) {
                 snackbar.dismiss();
             }
-            NewsParser newsParser = new NewsParser(this, document);
-            newsLab.setNewsList(newsParser.getListNews());
+            newsLab.setNewsList(NewsParser.createListNews(this, document));
             onBindRecyclerView();
         }
     }
