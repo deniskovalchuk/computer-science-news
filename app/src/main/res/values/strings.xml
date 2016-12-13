@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Новости ИМИТ</string>
     <string name="default_title">"Новость от "</string>
-    <string name="menu_find_subtitle">Поиск</string>
-    <string name="menu_share_subtitle">Поделиться</string>
     <string name="title_news_list">Новости</string>
-    <string name="news_icon">news icons</string>
+    <string name="news_icon">news_icon</string>
+    <string name="petrsu_logo">petrsu_logo</string>
+    <string name="send_to">Поделиться новостью...</string>
 </resources>

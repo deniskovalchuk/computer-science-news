@@ -6,7 +6,8 @@
     <ImageView
         style="@style/ImageIcon"
         android:id="@+id/ic_news"
-        android:src="@drawable/ic_news" />
+        android:src="@drawable/ic_news"
+        android:contentDescription="@string/news_icon"/>
 
     <TextView
         style="@style/Text.ListItemTitle"

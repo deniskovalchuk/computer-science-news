@@ -10,6 +10,7 @@ import java.util.List;
 
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.parser.NewsParser;
+import cs.petrsu.ru.imitnews.parser.PetrSU;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -39,7 +40,7 @@ public class TestNewsParser {
         }
 
         Document document = Jsoup.parse(badHtml);
-        newsList = NewsParser.createListNews(null, document);
+        newsList = PetrSU.createNewsList(null, document);
         assertEquals(newsList.size(), 5);
     }
 }

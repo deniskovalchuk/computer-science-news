@@ -24,7 +24,7 @@ import java.util.List;
 
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.parser.NewsParser;
+import cs.petrsu.ru.imitnews.parser.PetrSU;
 import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
 
 /**
@@ -80,7 +80,7 @@ public class NewsListActivity extends AppCompatActivity
     @Override
     public Loader<Document> onCreateLoader(int i, Bundle bundle) {
         if (i == PAGE_LOADER) {
-            return new HtmlPageLoader(this, NewsParser.getUrl());
+            return new HtmlPageLoader(this, PetrSU.getUrl());
         }
         return null;
     }
@@ -98,7 +98,7 @@ public class NewsListActivity extends AppCompatActivity
             if (snackbar.isShown()) {
                 snackbar.dismiss();
             }
-            newsLab.setNewsList(NewsParser.createListNews(this, document));
+            newsLab.setNewsList(PetrSU.createNewsList(this, document));
             onBindRecyclerView();
         }
     }
@@ -131,8 +131,7 @@ public class NewsListActivity extends AppCompatActivity
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, final int position) {
-            holder.news = newsList.get(position);
-            holder.titleTextView.setText(newsList.get(position).getTitle());
+            holder.onBind(position);
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -141,7 +140,6 @@ public class NewsListActivity extends AppCompatActivity
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.new_detail_container, fragment)
                                 .commit();
-
                     } else {
                         Context context = v.getContext();
                         Intent intent = NewsDetailActivity.newIntent(context, position);
@@ -157,14 +155,19 @@ public class NewsListActivity extends AppCompatActivity
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            public final View view;
-            public final TextView titleTextView;
-            public News news;
+            private final TextView titleTextView;
+            private News news;
+            final View view;
 
             ViewHolder(View view) {
                 super(view);
                 this.view = view;
                 titleTextView = (TextView) view.findViewById(R.id.title_news_text);
+            }
+
+            public void onBind(int position) {
+                news = newsList.get(position);
+                titleTextView.setText(news.getTitle());
             }
         }
     }

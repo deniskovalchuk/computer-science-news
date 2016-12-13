@@ -7,15 +7,14 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ShareCompat;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.webkit.WebView;
 
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.parser.SafeURLSpan;
+import cs.petrsu.ru.imitnews.parser.PetrSU;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.
@@ -24,7 +23,7 @@ import cs.petrsu.ru.imitnews.parser.SafeURLSpan;
 
 public class NewsDetailFragment extends Fragment {
     private static final String TAG = "NewsDetailFragment";
-    public static final String ARG_NEWS_ID = "item_id";
+    private static final String ARG_NEWS_ID = "item_id";
     private News news;
 
     public static NewsDetailFragment newInstance(int position) {
@@ -58,17 +57,20 @@ public class NewsDetailFragment extends Fragment {
             public void onClick(View view) {
                 Intent intent = ShareCompat.IntentBuilder.from(getActivity())
                         .setType("text/plain")
-                        .setText(news.getTitle() + "\n" + news.getContent())
+                        .setText(news.getContent())
                         .getIntent();
+                intent = intent.createChooser(intent, getString(R.string.send_to));
                 startActivity(intent);
             }
         });
 
         if (news != null) {
-            TextView newsTextView = (TextView) rootView.findViewById(R.id.fragment_detail_content_text);
-            newsTextView.setLinksClickable(true);
-            newsTextView.setMovementMethod(LinkMovementMethod.getInstance());
-            newsTextView.setText(SafeURLSpan.parseSafeHtml(getActivity(), newsTextView, news.getContent()));
+            WebView webView = (WebView) rootView.findViewById(R.id.fragment_detail_web_view);
+            webView.loadDataWithBaseURL(PetrSU.getUrl(),
+                    news.getHtml(),
+                    "text/html; charset = utf-8;",
+                    "utf-8",
+                    null);
         }
 
         return rootView;
