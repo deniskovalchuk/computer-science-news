@@ -1,6 +1,7 @@
 package cs.petrsu.ru.imitnews.remote;
 
 import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
 
 import org.jsoup.nodes.Document;
 
@@ -9,7 +10,7 @@ import org.jsoup.nodes.Document;
  * Email: deniskk25@gmail.com
  */
 
-public class HtmlPageLoader extends android.content.AsyncTaskLoader {
+public class HtmlPageLoader extends AsyncTaskLoader {
     private HtmlPage htmlPage;
 
     public HtmlPageLoader(Context context, String url) {

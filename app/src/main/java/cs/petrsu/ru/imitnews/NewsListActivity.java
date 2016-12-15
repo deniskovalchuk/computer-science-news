@@ -2,11 +2,12 @@ package cs.petrsu.ru.imitnews;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.Loader;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -33,12 +34,14 @@ import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
  */
 
 public class NewsListActivity extends AppCompatActivity
-        implements android.app.LoaderManager.LoaderCallbacks<Document> {
+        implements LoaderManager.LoaderCallbacks<Document> {
     private static final String TAG = "NewsListActivity";
     private static final int PAGE_LOADER = 0;
     private boolean isTwoPane;
     private NewsLab newsLab;
     private int newsIndex;
+
+    private Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,10 +60,24 @@ public class NewsListActivity extends AppCompatActivity
         }
 
         if (newsLab.getNewsList().isEmpty()) {
-            getLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
+            getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
         } else {
             onBindRecyclerView();
         }
+    }
+
+    private void createSnackbar() {
+        snackbar = Snackbar.make(
+                findViewById(R.id.activity_news_list),
+                getString(R.string.not_connection),
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.replay, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        getSupportLoaderManager().initLoader(PAGE_LOADER, null, NewsListActivity.this).forceLoad();
+                    }
+                });
+        snackbar.show();
     }
 
     @Override
@@ -76,15 +93,18 @@ public class NewsListActivity extends AppCompatActivity
             case R.id.menu_find:
                 return true;
             case R.id.menu_share:
-                Intent intent = ShareCompat.IntentBuilder.from(this).setType("text/plain")
-                        .setText(newsLab.getNews(newsIndex).getContent())
-                        .getIntent();
-                intent = Intent.createChooser(intent, getString(R.string.send_to));
-                startActivity(intent);
+                startShareActivity();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void startShareActivity() {
+        Intent intent = ShareCompat.IntentBuilder.from(this).setType("text/plain")
+                .setText(newsLab.getNews(newsIndex).getContent()).getIntent();
+        intent = Intent.createChooser(intent, getString(R.string.send_to));
+        startActivity(intent);
     }
 
     private void onBindRecyclerView() {
@@ -98,29 +118,33 @@ public class NewsListActivity extends AppCompatActivity
     }
 
     @Override
-    public Loader<Document> onCreateLoader(int i, Bundle bundle) {
-        if (i == PAGE_LOADER) {
+    public Loader<Document> onCreateLoader(int id, Bundle args) {
+        if (id == PAGE_LOADER) {
             return new HtmlPageLoader(this, PetrSU.getUrl());
         }
         return null;
     }
 
     @Override
-    public void onLoadFinished(Loader<Document> loader, Document document) {
+    public void onLoadFinished(Loader<Document> loader, Document data) {
         if (loader.getId() == PAGE_LOADER) {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.activity_news_list),
-                    getString(R.string.not_connection),
-                    Snackbar.LENGTH_INDEFINITE);
-            if (document == null) {
-                snackbar.show();
+            if (isFailLoad(data)) {
                 return;
             }
-            if (snackbar.isShown()) {
-                snackbar.dismiss();
-            }
-            newsLab.setNewsList(PetrSU.createNewsList(this, document));
+            newsLab.setNewsList(PetrSU.createNewsList(this, data));
             onBindRecyclerView();
         }
+    }
+
+    private boolean isFailLoad(Document data) {
+        if (data == null) {
+            createSnackbar();
+            return true;
+        }
+        if (snackbar != null && snackbar.isShown()) {
+            snackbar.dismiss();
+        }
+        return false;
     }
 
     @Override
@@ -138,7 +162,7 @@ public class NewsListActivity extends AppCompatActivity
                 NewsDetailFragment fragment = NewsDetailFragment.newInstance(newsIndex);
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.new_detail_container, fragment)
-                        .commit();
+                        .commitAllowingStateLoss();
             }
         }
 
