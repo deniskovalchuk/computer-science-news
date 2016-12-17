@@ -9,17 +9,14 @@ import java.util.List;
  */
 
 public class NewsLab {
-    private static NewsLab newsLab;
+    private static final NewsLab newsLab = new NewsLab();
     private List<News> newsList;
 
     private NewsLab() {
         newsList = new ArrayList<>();
     }
 
-    public static NewsLab get() {
-        if (newsLab == null) {
-            newsLab = new NewsLab();
-        }
+    public static NewsLab getInstance() {
         return newsLab;
     }
 
@@ -33,5 +30,10 @@ public class NewsLab {
 
     public News getNews(int position) {
         return newsList.get(position);
+    }
+
+    public void addNews(String html, String title, String content) {
+        News news = new News(html, title, content);
+        newsList.add(news);
     }
 }

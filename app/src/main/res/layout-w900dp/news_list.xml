@@ -16,6 +16,7 @@
         android:name="cs.petrsu.ru.imitnews.NewsListFragment"
         android:layout_width="@dimen/item_width"
         android:layout_height="match_parent"
+        android:background="@android:color/white"
         app:layoutManager="LinearLayoutManager"
         tools:context="cs.petrsu.ru.imitnews.NewsListActivity"
         tools:listitem="@layout/news_list_content" />

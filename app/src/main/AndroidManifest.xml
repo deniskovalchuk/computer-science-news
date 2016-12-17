@@ -23,7 +23,6 @@
         </activity>
         <activity
             android:name=".NewsDetailActivity"
-            android:label="@string/title_news_list"
             android:parentActivityName=".NewsListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

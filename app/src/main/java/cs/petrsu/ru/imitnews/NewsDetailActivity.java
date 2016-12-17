@@ -33,6 +33,9 @@ public class NewsDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_detail);
+
+        NewsLab newsLab = NewsLab.getInstance();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
 
@@ -42,7 +45,7 @@ public class NewsDetailActivity extends AppCompatActivity {
         }
 
         int newsId = getIntent().getIntExtra(EXTRA_NEWS_ID, 0);
-        final News news = NewsLab.get().getNews(newsId);
+        final News news = newsLab.getNews(newsId);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -52,7 +55,7 @@ public class NewsDetailActivity extends AppCompatActivity {
                         .setType("text/plain")
                         .setText(news.getContent())
                         .getIntent();
-                intent = intent.createChooser(intent, getString(R.string.send_to));
+                intent = Intent.createChooser(intent, getString(R.string.send_to));
                 startActivity(intent);
             }
         });

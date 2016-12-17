@@ -1,6 +1,5 @@
 package cs.petrsu.ru.imitnews.parser;
 
-import android.content.Context;
 import android.os.Build;
 import android.text.Html;
 
@@ -8,11 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import cs.petrsu.ru.imitnews.R;
-import cs.petrsu.ru.imitnews.news.News;
+import cs.petrsu.ru.imitnews.news.NewsLab;
 
 /**
  * Created by Kovalchuk Denis on 22.11.16.
@@ -21,23 +16,22 @@ import cs.petrsu.ru.imitnews.news.News;
 
 public class NewsParser {
     private static final String TAG = "NewsParser";
+    private static final String defaultTitle = "Новость от ";
     private static Element newsHtml;
 
-    public static List<News> createListNews(Context context, Document document) {
-        List<News> newsList = new ArrayList<>();
+    public static void createListNews(Document document) {
+        NewsLab newsLab = NewsLab.getInstance();
         Elements allNews = document.select("div[id]");
         for (Element currentNews : allNews) {
             newsHtml = currentNews.select("div").get(0);
-            News news = new News(newsHtml.toString(), parseTitle(context), parseContent());
-            newsList.add(news);
+            newsLab.addNews(newsHtml.toString(), parseTitle(), parseContent());
         }
-        return newsList;
     }
 
-    private static String parseTitle(Context context) {
+    private static String parseTitle() {
         String title = newsHtml.select("span.title").text();
         String date = newsHtml.select("b").text();
-        return title.isEmpty() ? context.getString(R.string.default_title) + date : title;
+        return title.isEmpty() ? defaultTitle + date : title;
     }
 
     private static String parseContent() {

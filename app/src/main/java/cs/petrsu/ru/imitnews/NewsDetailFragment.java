@@ -21,7 +21,7 @@ import cs.petrsu.ru.imitnews.parser.PetrSU;
 public class NewsDetailFragment extends Fragment {
     private static final String TAG = "NewsDetailFragment";
     private static final String ARG_NEWS_ID = "item_id";
-    private News news;
+    private static News news;
 
     public static NewsDetailFragment newInstance(int position) {
         Bundle arguments = new Bundle();
@@ -36,7 +36,9 @@ public class NewsDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         int position = getArguments().getInt(ARG_NEWS_ID);
-        news = NewsLab.get().getNews(position);
+        NewsLab newsLab = NewsLab.getInstance();
+        news = newsLab.getNews(position);
+
         Activity activity = this.getActivity();
         CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
         if (appBarLayout != null) {
@@ -48,13 +50,12 @@ public class NewsDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.news_detail, container, false);
-
         if (news != null) {
             WebView webView = (WebView) rootView.findViewById(R.id.fragment_detail_web_view);
+            webView.getSettings().setJavaScriptEnabled(true);
             webView.loadDataWithBaseURL(PetrSU.getUrl(), news.getHtml(),
                     "text/html; charset = utf-8;", "utf-8", null);
         }
-
         return rootView;
     }
 }
