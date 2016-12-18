@@ -10,7 +10,7 @@ import java.util.List;
 
 public class NewsLab {
     private static final NewsLab newsLab = new NewsLab();
-    private List<News> newsList;
+    private static List<News> newsList;
 
     private NewsLab() {
         newsList = new ArrayList<>();
@@ -24,16 +24,11 @@ public class NewsLab {
         return newsList;
     }
 
-    public void setNewsList(List<News> news) {
-        this.newsList = news;
+    public void setNewsList(List<News> newsList) {
+        NewsLab.newsList = newsList;
     }
 
     public News getNews(int position) {
         return newsList.get(position);
-    }
-
-    public void addNews(String html, String title, String content) {
-        News news = new News(html, title, content);
-        newsList.add(news);
     }
 }

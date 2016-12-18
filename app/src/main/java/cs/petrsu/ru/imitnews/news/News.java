@@ -6,13 +6,14 @@ package cs.petrsu.ru.imitnews.news;
  */
 
 public class News {
+    private static final String defaultTitle = "Новость от ";
     private String html;
     private String title;
     private String content;
 
-    public News(String html, String title, String content) {
+    public News(String html, String title, String date, String content) {
         this.html = html;
-        this.title = title;
+        this.title = title.isEmpty() ? defaultTitle + date : title;
         this.content = content;
     }
 

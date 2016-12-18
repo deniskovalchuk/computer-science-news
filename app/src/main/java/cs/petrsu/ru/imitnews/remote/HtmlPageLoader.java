@@ -5,13 +5,17 @@ import android.support.v4.content.AsyncTaskLoader;
 
 import org.jsoup.nodes.Document;
 
+import java.io.IOException;
+
 /**
  * Created by Kovalchuk Denis on 22.11.16.
  * Email: deniskk25@gmail.com
  */
 
 public class HtmlPageLoader extends AsyncTaskLoader {
+    private static final String TAG = "HtmlPageLoader";
     private HtmlPage htmlPage;
+    private static boolean failLoad = true;
 
     public HtmlPageLoader(Context context, String url) {
         super(context);
@@ -20,6 +24,17 @@ public class HtmlPageLoader extends AsyncTaskLoader {
 
     @Override
     public Document loadInBackground() {
-        return htmlPage.get();
+        Document document = null;
+        try {
+            document = htmlPage.get();
+            failLoad = false;
+        } catch (IOException exc) {
+            failLoad = true;
+        }
+        return document;
+    }
+
+    public static boolean isFailLoad() {
+        return failLoad;
     }
 }

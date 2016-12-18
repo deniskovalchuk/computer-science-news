@@ -17,14 +17,7 @@ public class HtmlPage {
         this.url = url;
     }
 
-    Document get() {
-        Document doc;
-
-        try {
-            doc = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            return null;
-        }
-        return doc;
+    Document get() throws IOException {
+        return Jsoup.connect(url).get();
     }
 }

@@ -29,7 +29,6 @@ import cs.petrsu.ru.imitnews.news.NewsLab;
 import cs.petrsu.ru.imitnews.parser.NewsParser;
 import cs.petrsu.ru.imitnews.parser.PetrSU;
 import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
-import cs.petrsu.ru.imitnews.remote.LoadedDataInspector;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.
@@ -68,7 +67,7 @@ public class NewsListActivity extends AppCompatActivity
             isTwoPane = true;
         }
 
-        if (LoadedDataInspector.isFailLoad()) {
+        if (HtmlPageLoader.isFailLoad()) {
             getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
         } else {
             onBindRecyclerView();
@@ -92,7 +91,7 @@ public class NewsListActivity extends AppCompatActivity
     }
 
     private void onBindRecyclerView() {
-        RecyclerView newsRecyclerView = (RecyclerView) findViewById(R.id.new_list);
+        RecyclerView newsRecyclerView = (RecyclerView) findViewById(R.id.news_list);
         assert newsRecyclerView != null;
         newsRecyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(newsLab.getNewsList()));
     }
@@ -154,13 +153,14 @@ public class NewsListActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Document> loader, Document data) {
         if (loader.getId() == PAGE_LOADER) {
-            if (LoadedDataInspector.isFailLoad(data)) {
+            if (HtmlPageLoader.isFailLoad()) {
                 createSnackbarReplyConnection();
                 return;
-            } else if (snackbar != null && snackbar.isShown()) {
+            }
+            if (snackbar != null && snackbar.isShown()) {
                 snackbar.dismiss();
             }
-            NewsParser.createListNews(data);
+            newsLab.setNewsList(NewsParser.createNewsList(data));
             onBindRecyclerView();
         }
     }
@@ -177,11 +177,11 @@ public class NewsListActivity extends AppCompatActivity
                 .commitAllowingStateLoss();
     }
 
-    public class SimpleItemRecyclerViewAdapter
+    private class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
         private final List<News> newsList;
 
-        public SimpleItemRecyclerViewAdapter(List<News> newsList) {
+        SimpleItemRecyclerViewAdapter(List<News> newsList) {
             this.newsList = newsList;
         }
 
@@ -235,7 +235,7 @@ public class NewsListActivity extends AppCompatActivity
                 titleTextView = (TextView) view.findViewById(R.id.title_news_text);
             }
 
-            public void onBind(int position) {
+            void onBind(int position) {
                 news = newsList.get(position);
                 titleTextView.setText(news.getTitle());
             }

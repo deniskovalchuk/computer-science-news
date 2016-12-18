@@ -7,7 +7,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import cs.petrsu.ru.imitnews.news.NewsLab;
+import java.util.ArrayList;
+import java.util.List;
+
+import cs.petrsu.ru.imitnews.news.News;
 
 /**
  * Created by Kovalchuk Denis on 22.11.16.
@@ -16,22 +19,23 @@ import cs.petrsu.ru.imitnews.news.NewsLab;
 
 public class NewsParser {
     private static final String TAG = "NewsParser";
-    private static final String defaultTitle = "Новость от ";
     private static Element newsHtml;
 
-    public static void createListNews(Document document) {
-        NewsLab newsLab = NewsLab.getInstance();
+    private NewsParser() {
+
+    }
+
+    public static List<News> createNewsList(Document document) {
+        List<News> newsList = new ArrayList<>();
         Elements allNews = document.select("div[id]");
         for (Element currentNews : allNews) {
             newsHtml = currentNews.select("div").get(0);
-            newsLab.addNews(newsHtml.toString(), parseTitle(), parseContent());
+            String title = newsHtml.select("span.title").text();
+            String date = newsHtml.select("b").text();
+            String content = parseContent();
+            newsList.add(new News(newsHtml.toString(), title, date, content));
         }
-    }
-
-    private static String parseTitle() {
-        String title = newsHtml.select("span.title").text();
-        String date = newsHtml.select("b").text();
-        return title.isEmpty() ? defaultTitle + date : title;
+        return newsList;
     }
 
     private static String parseContent() {

@@ -12,7 +12,7 @@
 
     <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/new_list"
+        android:id="@+id/news_list"
         android:name="cs.petrsu.ru.imitnews.NewsListFragment"
         android:layout_width="@dimen/item_width"
         android:layout_height="match_parent"
