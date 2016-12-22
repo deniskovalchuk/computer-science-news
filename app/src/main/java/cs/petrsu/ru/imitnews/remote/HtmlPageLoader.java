@@ -16,6 +16,7 @@ public class HtmlPageLoader extends AsyncTaskLoader {
     private static final String TAG = "HtmlPageLoader";
     private HtmlPage htmlPage;
     private static boolean failLoad = true;
+    private static boolean isLoading = false;
 
     public HtmlPageLoader(Context context, String url) {
         super(context);
@@ -36,5 +37,13 @@ public class HtmlPageLoader extends AsyncTaskLoader {
 
     public static boolean isFailLoad() {
         return failLoad;
+    }
+
+    public static boolean isLoading() {
+        return isLoading;
+    }
+
+    public static void setLoading(boolean isLoading) {
+        HtmlPageLoader.isLoading = isLoading;
     }
 }

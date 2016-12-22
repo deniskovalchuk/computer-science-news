@@ -2,22 +2,21 @@ package cs.petrsu.ru.imitnews;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.app.ShareCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.jsoup.nodes.Document;
@@ -38,14 +37,14 @@ import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
 public class NewsListActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Document> {
     private static final String TAG = "NewsListActivity";
-    private static final String NEWS_INDEX_KEY = "news_index";
     private static final int PAGE_LOADER = 0;
+    private static final int ARCHIVE_PAGE_LOADER = 1;
+
+    private SimpleItemRecyclerViewAdapter adapter;
+    private ProgressBar progressBar;
+    private Snackbar snackbar;
 
     private NewsLab newsLab;
-    private boolean isTwoPane;
-    private int newsIndex;
-
-    private Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,19 +52,13 @@ public class NewsListActivity extends AppCompatActivity
         setContentView(R.layout.activity_news_list);
 
         newsLab = NewsLab.getInstance();
-        newsIndex = 0;
-
-        if (savedInstanceState != null) {
-            newsIndex = savedInstanceState.getInt(NEWS_INDEX_KEY);
-        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        if (findViewById(R.id.new_detail_container) != null) {
-            isTwoPane = true;
-        }
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.VISIBLE);
 
         if (HtmlPageLoader.isFailLoad()) {
             getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
@@ -74,26 +67,36 @@ public class NewsListActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(NEWS_INDEX_KEY, newsIndex);
-    }
-
-    private void startShareActivity() {
-        if (newsLab.getNewsList().isEmpty()) {
-            return;
-        }
-        Intent intent = ShareCompat.IntentBuilder.from(this).setType("text/plain")
-                .setText(newsLab.getNews(newsIndex).getContent()).getIntent();
-        intent = Intent.createChooser(intent, getString(R.string.send_to));
-        startActivity(intent);
-    }
-
     private void onBindRecyclerView() {
+        adapter = new SimpleItemRecyclerViewAdapter(newsLab.getNewsList());
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(NewsListActivity.this);
         RecyclerView newsRecyclerView = (RecyclerView) findViewById(R.id.news_list);
         assert newsRecyclerView != null;
-        newsRecyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(newsLab.getNewsList()));
+        newsRecyclerView.setAdapter(adapter);
+        newsRecyclerView.setLayoutManager(layoutManager);
+        newsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItems = layoutManager.findFirstVisibleItemPosition();
+                if (!HtmlPageLoader.isLoading()) {
+                    if ((visibleItemCount + firstVisibleItems) >= totalItemCount) {
+                        HtmlPageLoader.setLoading(true);
+                        if (getSupportLoaderManager().getLoader(ARCHIVE_PAGE_LOADER) != null) {
+                            getSupportLoaderManager().restartLoader(ARCHIVE_PAGE_LOADER, null,
+                                    NewsListActivity.this).forceLoad();
+                        } else {
+                            getSupportLoaderManager().initLoader(ARCHIVE_PAGE_LOADER, null,
+                                    NewsListActivity.this).forceLoad();
+                        }
+                    }
+                }
+            }
+        });
+        progressBar.setVisibility(View.GONE);
+        newsRecyclerView.setVisibility(View.VISIBLE);
     }
 
     private void createSnackbarReplyConnection() {
@@ -109,19 +112,6 @@ public class NewsListActivity extends AppCompatActivity
         snackbar.show();
     }
 
-    private void createSnackbarNoNews() {
-        snackbar = Snackbar.make(findViewById(R.id.activity_news_list),
-                getString(R.string.no_news), Snackbar.LENGTH_INDEFINITE);
-        View view = snackbar.getView();
-        TextView text = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            text.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        } else {
-            text.setGravity(Gravity.CENTER_HORIZONTAL);
-        }
-        snackbar.show();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -134,9 +124,6 @@ public class NewsListActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.menu_find:
                 return true;
-            case R.id.menu_share:
-                startShareActivity();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -144,37 +131,38 @@ public class NewsListActivity extends AppCompatActivity
 
     @Override
     public Loader<Document> onCreateLoader(int id, Bundle args) {
+        // TODO: pattern strategy for HtmlPageLoader
         if (id == PAGE_LOADER) {
             return new HtmlPageLoader(this, PetrSU.getUrl());
+        } else if (id == ARCHIVE_PAGE_LOADER) {
+            return new HtmlPageLoader(this, PetrSU.getNewsArchiveUrl());
         }
         return null;
     }
 
+    // TODO: will fix loading bug when no connection
     @Override
     public void onLoadFinished(Loader<Document> loader, Document data) {
+        if (HtmlPageLoader.isFailLoad()) {
+            createSnackbarReplyConnection();
+            return;
+        }
+        if (snackbar != null && snackbar.isShown()) {
+            snackbar.dismiss();
+        }
         if (loader.getId() == PAGE_LOADER) {
-            if (HtmlPageLoader.isFailLoad()) {
-                createSnackbarReplyConnection();
-                return;
-            }
-            if (snackbar != null && snackbar.isShown()) {
-                snackbar.dismiss();
-            }
             newsLab.setNewsList(NewsParser.createNewsList(data));
             onBindRecyclerView();
+        } else if (loader.getId() == ARCHIVE_PAGE_LOADER) {
+            newsLab.addNewsList(NewsParser.createNewsList(data));
+            adapter.notifyDataSetChanged();
+            HtmlPageLoader.setLoading(false);
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Document> loader) {
 
-    }
-
-    private void createFragment() {
-        NewsDetailFragment fragment = NewsDetailFragment.newInstance(newsIndex);
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.new_detail_container, fragment)
-                .commitAllowingStateLoss();
     }
 
     private class SimpleItemRecyclerViewAdapter
@@ -189,11 +177,6 @@ public class NewsListActivity extends AppCompatActivity
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.news_list_content,
                     parent, false);
-            if (newsList.isEmpty()) {
-                createSnackbarNoNews();
-            } else if (isTwoPane) {
-                createFragment();
-            }
             return new ViewHolder(view);
         }
 
@@ -203,18 +186,9 @@ public class NewsListActivity extends AppCompatActivity
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    newsIndex = position;
-                    if (isTwoPane) {
-                        NewsDetailFragment fragment = NewsDetailFragment.newInstance(position);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.new_detail_container, fragment)
-                                .commit();
-                    } else {
-                        Context context = v.getContext();
-                        Intent intent = NewsDetailActivity.newIntent(context, position);
-                        context.startActivity(intent);
-                    }
+                    Context context = v.getContext();
+                    Intent intent = NewsDetailActivity.newIntent(context, position);
+                    context.startActivity(intent);
                 }
             });
         }

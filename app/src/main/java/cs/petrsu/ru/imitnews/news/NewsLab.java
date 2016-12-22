@@ -28,6 +28,10 @@ public class NewsLab {
         NewsLab.newsList = newsList;
     }
 
+    public void addNewsList(List<News> newsList) {
+        NewsLab.newsList.addAll(newsList);
+    }
+
     public News getNews(int position) {
         return newsList.get(position);
     }

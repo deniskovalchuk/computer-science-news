@@ -42,7 +42,7 @@ public class NewsDetailFragment extends Fragment {
         Activity activity = this.getActivity();
         CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
         if (appBarLayout != null) {
-            appBarLayout.setTitle(getString(R.string.title_news_list));
+            appBarLayout.setTitle(getString(R.string.app_name));
         }
     }
 
@@ -52,7 +52,6 @@ public class NewsDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.news_detail, container, false);
         if (news != null) {
             WebView webView = (WebView) rootView.findViewById(R.id.fragment_detail_web_view);
-            webView.getSettings().setJavaScriptEnabled(true);
             webView.loadDataWithBaseURL(PetrSU.getUrl(), news.getHtml(),
                     "text/html; charset = utf-8;", "utf-8", null);
         }
