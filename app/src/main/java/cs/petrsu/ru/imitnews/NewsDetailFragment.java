@@ -11,7 +11,7 @@ import android.webkit.WebView;
 
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.parser.PetrSU;
+import cs.petrsu.ru.imitnews.petrsu.PetrSU;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.

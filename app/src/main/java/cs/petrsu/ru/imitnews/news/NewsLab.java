@@ -1,5 +1,9 @@
 package cs.petrsu.ru.imitnews.news;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,5 +38,27 @@ public class NewsLab {
 
     public News getNews(int position) {
         return newsList.get(position);
+    }
+
+    public void addNews(News news) {
+        newsList.add(news);
+    }
+
+    public void addNewsListToEnd(Document document) {
+        newsList.addAll(createNewsList(document));
+    }
+
+    public void addNewsListToEnd(List<News> newsList) {
+        NewsLab.newsList.addAll(newsList);
+    }
+
+    public List<News> createNewsList(Document document) {
+        List<News> newsList = new ArrayList<>();
+        Elements allNews = document.select("div[id]");
+        for (Element currentNews : allNews) {
+            Element newsHtml = currentNews.select("div").get(0);
+            newsList.add(new News(newsHtml));
+        }
+        return newsList;
     }
 }

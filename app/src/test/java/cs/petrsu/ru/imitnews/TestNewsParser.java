@@ -8,7 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.parser.NewsParser;
+import cs.petrsu.ru.imitnews.petrsu.NewsParser;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

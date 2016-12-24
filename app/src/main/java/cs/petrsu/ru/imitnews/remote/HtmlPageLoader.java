@@ -6,6 +6,10 @@ import android.support.v4.content.AsyncTaskLoader;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.util.List;
+
+import cs.petrsu.ru.imitnews.news.News;
+import cs.petrsu.ru.imitnews.news.NewsLab;
 
 /**
  * Created by Kovalchuk Denis on 22.11.16.
@@ -14,36 +18,23 @@ import java.io.IOException;
 
 public class HtmlPageLoader extends AsyncTaskLoader {
     private static final String TAG = "HtmlPageLoader";
+    private NewsLab newsLab;
     private HtmlPage htmlPage;
-    private static boolean failLoad = true;
-    private static boolean isLoading = false;
 
     public HtmlPageLoader(Context context, String url) {
         super(context);
+        newsLab = NewsLab.getInstance();
         htmlPage = new HtmlPage(url);
     }
 
     @Override
-    public Document loadInBackground() {
-        Document document = null;
+    public List<News> loadInBackground() {
+        Document document;
         try {
             document = htmlPage.get();
-            failLoad = false;
         } catch (IOException exc) {
-            failLoad = true;
+            return null;
         }
-        return document;
-    }
-
-    public static boolean isFailLoad() {
-        return failLoad;
-    }
-
-    public static boolean isLoading() {
-        return isLoading;
-    }
-
-    public static void setLoading(boolean isLoading) {
-        HtmlPageLoader.isLoading = isLoading;
+        return newsLab.createNewsList(document);
     }
 }

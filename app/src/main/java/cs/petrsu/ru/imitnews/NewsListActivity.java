@@ -19,14 +19,12 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.jsoup.nodes.Document;
-
 import java.util.List;
 
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.parser.NewsParser;
-import cs.petrsu.ru.imitnews.parser.PetrSU;
+import cs.petrsu.ru.imitnews.petrsu.ArchiveUrl;
+import cs.petrsu.ru.imitnews.petrsu.PetrSU;
 import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
 
 /**
@@ -35,16 +33,20 @@ import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
  */
 
 public class NewsListActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Document> {
+        implements LoaderManager.LoaderCallbacks<List<News>> {
     private static final String TAG = "NewsListActivity";
+    private static final String KEY_FIRST_LOAD = "isFirstLoad";
+    private static final String KEY_LOADING = "isLoading";
     private static final int PAGE_LOADER = 0;
-    private static final int ARCHIVE_PAGE_LOADER = 1;
 
-    private SimpleItemRecyclerViewAdapter adapter;
-    private ProgressBar progressBar;
-    private Snackbar snackbar;
-
+    private boolean isFirstLoad;
+    private boolean isLoading;
     private NewsLab newsLab;
+
+    private LinearLayoutManager layoutManager;
+    private RecyclerView newsRecyclerView;
+    private RecyclerViewAdapter adapter;
+    private Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,63 +55,56 @@ public class NewsListActivity extends AppCompatActivity
 
         newsLab = NewsLab.getInstance();
 
+        if (savedInstanceState != null) {
+            isFirstLoad = savedInstanceState.getBoolean(KEY_FIRST_LOAD);
+            isLoading = savedInstanceState.getBoolean(KEY_LOADING);
+        } else {
+            isFirstLoad = true;
+            isLoading = false;
+        }
+
+        if (isLoading) {
+            getSupportLoaderManager().initLoader(PAGE_LOADER, null,
+                    NewsListActivity.this);
+        }
+
+        if (isFirstLoad) {
+            getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
+        } else {
+            createRecyclerView();
+        }
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
-
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        progressBar.setVisibility(View.VISIBLE);
-
-        if (HtmlPageLoader.isFailLoad()) {
-            getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
-        } else {
-            onBindRecyclerView();
-        }
     }
 
-    private void onBindRecyclerView() {
-        adapter = new SimpleItemRecyclerViewAdapter(newsLab.getNewsList());
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(NewsListActivity.this);
-        RecyclerView newsRecyclerView = (RecyclerView) findViewById(R.id.news_list);
-        assert newsRecyclerView != null;
-        newsRecyclerView.setAdapter(adapter);
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_FIRST_LOAD, isFirstLoad);
+        outState.putBoolean(KEY_LOADING, isLoading);
+    }
+
+    private void createRecyclerView() {
+        newsRecyclerView = (RecyclerView) findViewById(R.id.news_list);
+        newsRecyclerView.setHasFixedSize(true);
+
+        layoutManager = new LinearLayoutManager(this);
         newsRecyclerView.setLayoutManager(layoutManager);
-        newsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+        adapter = new RecyclerViewAdapter(newsLab.getNewsList());
+        adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisibleItems = layoutManager.findFirstVisibleItemPosition();
-                if (!HtmlPageLoader.isLoading()) {
-                    if ((visibleItemCount + firstVisibleItems) >= totalItemCount) {
-                        HtmlPageLoader.setLoading(true);
-                        if (getSupportLoaderManager().getLoader(ARCHIVE_PAGE_LOADER) != null) {
-                            getSupportLoaderManager().restartLoader(ARCHIVE_PAGE_LOADER, null,
-                                    NewsListActivity.this).forceLoad();
-                        } else {
-                            getSupportLoaderManager().initLoader(ARCHIVE_PAGE_LOADER, null,
-                                    NewsListActivity.this).forceLoad();
-                        }
-                    }
-                }
+            public void onLoadMore() {
+                // add progress bar item
+                newsLab.getNewsList().add(null);
+                adapter.notifyItemInserted(newsLab.getNewsList().size() - 1);
+                getSupportLoaderManager().restartLoader(PAGE_LOADER, null, NewsListActivity.this)
+                        .forceLoad();
             }
         });
-        progressBar.setVisibility(View.GONE);
-        newsRecyclerView.setVisibility(View.VISIBLE);
-    }
-
-    private void createSnackbarReplyConnection() {
-        snackbar = Snackbar.make(findViewById(R.id.activity_news_list),
-                getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.replay, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        getSupportLoaderManager().restartLoader(PAGE_LOADER, null,
-                                NewsListActivity.this).forceLoad();
-                    }
-                });
-        snackbar.show();
+        newsRecyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -130,67 +125,133 @@ public class NewsListActivity extends AppCompatActivity
     }
 
     @Override
-    public Loader<Document> onCreateLoader(int id, Bundle args) {
-        // TODO: pattern strategy for HtmlPageLoader
+    public Loader<List<News>> onCreateLoader(int id, Bundle args) {
+        Loader<List<News>> loader = null;
         if (id == PAGE_LOADER) {
-            return new HtmlPageLoader(this, PetrSU.getUrl());
-        } else if (id == ARCHIVE_PAGE_LOADER) {
-            return new HtmlPageLoader(this, PetrSU.getNewsArchiveUrl());
+            loader = new HtmlPageLoader(this, PetrSU.getUrl());
         }
-        return null;
-    }
-
-    // TODO: will fix loading bug when no connection
-    @Override
-    public void onLoadFinished(Loader<Document> loader, Document data) {
-        if (HtmlPageLoader.isFailLoad()) {
-            createSnackbarReplyConnection();
-            return;
-        }
-        if (snackbar != null && snackbar.isShown()) {
-            snackbar.dismiss();
-        }
-        if (loader.getId() == PAGE_LOADER) {
-            newsLab.setNewsList(NewsParser.createNewsList(data));
-            onBindRecyclerView();
-        } else if (loader.getId() == ARCHIVE_PAGE_LOADER) {
-            newsLab.addNewsList(NewsParser.createNewsList(data));
-            adapter.notifyDataSetChanged();
-            HtmlPageLoader.setLoading(false);
-        }
+        return loader;
     }
 
     @Override
-    public void onLoaderReset(Loader<Document> loader) {
+    public void onLoadFinished(Loader<List<News>> loader, final List<News> newsList) {
+        if (newsList == null || newsList.isEmpty()) {
+            if (isFirstLoad) {
+                createSnackbarReplyConnection();
+            } else {
+                newsLab.getNewsList().remove(newsLab.getNewsList().size() - 1);
+                adapter.notifyItemRemoved(newsLab.getNewsList().size() + 1);
+            }
+        } else {
+            if (isFirstLoad) {
+                if (snackbar != null && snackbar.isShown()) {
+                    snackbar.dismiss();
+                }
+                isFirstLoad = false;
+                PetrSU.setUrlStrategy(new ArchiveUrl());
+                createRecyclerView();
+            } else {
+                newsLab.getNewsList().remove(newsLab.getNewsList().size() - 1);
+                PetrSU.setPreviousYearUrl();
+            }
+            int startPosition = newsLab.getNewsList().size() + 1;
+            int endPosition = startPosition + newsList.size();
+            newsLab.addNewsListToEnd(newsList);
+            for (int i = startPosition; i < endPosition; i++) {
+                adapter.notifyItemInserted(startPosition);
+            }
+        }
+        isLoading = false;
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<News>> loader) {
 
     }
 
-    private class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
+    private void createSnackbarReplyConnection() {
+        snackbar = Snackbar.make(findViewById(R.id.activity_news_list),
+                getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.replay, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        getSupportLoaderManager().restartLoader(PAGE_LOADER, null,
+                                NewsListActivity.this).forceLoad();
+                    }
+                });
+        snackbar.show();
+    }
+
+    private class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private final int VIEW_ITEM = 1;
+        private final int VIEW_PROGRESS_BAR = 0;
         private final List<News> newsList;
 
-        SimpleItemRecyclerViewAdapter(List<News> newsList) {
+        private int visibleThreshold = 5;
+        private int lastVisibleItem, totalItemCount;
+        private OnLoadMoreListener onLoadMoreListener;
+
+        RecyclerViewAdapter(List<News> newsList) {
             this.newsList = newsList;
+
+            if (newsRecyclerView.getLayoutManager() instanceof LinearLayoutManager) {
+                newsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+                        totalItemCount = layoutManager.getItemCount();
+                        lastVisibleItem = layoutManager.findLastVisibleItemPosition();
+                        if (!isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
+                            isLoading = true;
+                            if (onLoadMoreListener != null) {
+                                onLoadMoreListener.onLoadMore();
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.news_list_content,
-                    parent, false);
-            return new ViewHolder(view);
+        public int getItemViewType(int position) {
+            return newsList.get(position) != null ? VIEW_ITEM : VIEW_PROGRESS_BAR;
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, final int position) {
-            holder.onBind(position);
-            holder.view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Context context = v.getContext();
-                    Intent intent = NewsDetailActivity.newIntent(context, position);
-                    context.startActivity(intent);
-                }
-            });
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            RecyclerView.ViewHolder holder;
+            if (viewType == VIEW_ITEM) {
+                View v = LayoutInflater.from(parent.getContext()).inflate(
+                        R.layout.news_list_content, parent, false);
+                holder = new ViewHolder(v);
+            } else {
+                View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.progress_item,
+                        parent, false);
+                holder = new ProgressViewHolder(v);
+            }
+            return holder;
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+            if (holder instanceof ViewHolder) {
+                News news = newsList.get(position);
+                ((ViewHolder) holder).titleTextView.setText(news.getTitle());
+                ((ViewHolder) holder).view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Context context = v.getContext();
+                        Intent intent = NewsDetailActivity.newIntent(context, position);
+                        context.startActivity(intent);
+                    }
+                });
+            } else {
+                ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
+            }
+        }
+
+        private void setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+            this.onLoadMoreListener = onLoadMoreListener;
         }
 
         @Override
@@ -198,21 +259,25 @@ public class NewsListActivity extends AppCompatActivity
             return newsList.size();
         }
 
-        class ViewHolder extends RecyclerView.ViewHolder {
+        private class ProgressViewHolder extends RecyclerView.ViewHolder {
+            ProgressBar progressBar;
+
+            ProgressViewHolder(View view) {
+                super(view);
+                progressBar = (ProgressBar) view.findViewById(R.id.progress_bar_item);
+            }
+        }
+
+        private class ViewHolder extends RecyclerView.ViewHolder {
             final View view;
-            private final TextView titleTextView;
-            private News news;
+            final TextView titleTextView;
 
             ViewHolder(View view) {
                 super(view);
                 this.view = view;
                 titleTextView = (TextView) view.findViewById(R.id.title_news_text);
             }
-
-            void onBind(int position) {
-                news = newsList.get(position);
-                titleTextView.setText(news.getTitle());
-            }
         }
     }
 }
+
