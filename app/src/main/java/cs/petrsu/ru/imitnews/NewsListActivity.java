@@ -80,6 +80,14 @@ public class NewsListActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (isLoading) {
+            getSupportLoaderManager().getLoader(PAGE_LOADER).forceLoad();
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_FIRST_LOAD, isFirstLoad);
