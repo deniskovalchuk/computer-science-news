@@ -160,7 +160,7 @@ public class NewsListActivity extends AppCompatActivity
                 createRecyclerView();
             } else {
                 newsLab.getNewsList().remove(newsLab.getNewsList().size() - 1);
-                PetrSU.setPreviousYearUrl();
+                PetrSU.setPreviousYear();
             }
             int startPosition = newsLab.getNewsList().size() + 1;
             int endPosition = startPosition + newsList.size();
@@ -209,7 +209,7 @@ public class NewsListActivity extends AppCompatActivity
                         super.onScrolled(recyclerView, dx, dy);
                         totalItemCount = layoutManager.getItemCount();
                         lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-                        if (!isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
+                        if (PetrSU.isValidYear() && !isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
                             isLoading = true;
                             if (onLoadMoreListener != null) {
                                 onLoadMoreListener.onLoadMore();

@@ -7,17 +7,25 @@ package cs.petrsu.ru.imitnews.petrsu;
 
 public class PetrSU {
     private static final String TAG = "PetrSU";
-    private static UrlStrategy urlStrategy = new DefaultUrl();
+    private static NewsUrl url = new DefaultUrl();
 
-    public static void setUrlStrategy(UrlStrategy urlStrategy) {
-        PetrSU.urlStrategy = urlStrategy;
+    private PetrSU() {
+
+    }
+
+    public static void setUrlStrategy(NewsUrl url) {
+        PetrSU.url = url;
     }
 
     public static String getUrl() {
-        return urlStrategy.getUrl();
+        return url.getUrl();
     }
 
-    public static void setPreviousYearUrl() {
-        urlStrategy.setPreviousYearUrl();
+    public static void setPreviousYear() {
+        url.setPreviousYear();
+    }
+
+    public static boolean isValidYear() {
+        return url.isValidYear();
     }
 }
