@@ -23,7 +23,6 @@ import java.util.List;
 
 import cs.petrsu.ru.imitnews.news.News;
 import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.petrsu.ArchiveUrl;
 import cs.petrsu.ru.imitnews.petrsu.PetrSU;
 import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
 
@@ -156,7 +155,7 @@ public class NewsListActivity extends AppCompatActivity
                     snackbar.dismiss();
                 }
                 isFirstLoad = false;
-                PetrSU.setUrlStrategy(new ArchiveUrl());
+                PetrSU.setArchiveUrl();
                 createRecyclerView();
             } else {
                 newsLab.getNewsList().remove(newsLab.getNewsList().size() - 1);
