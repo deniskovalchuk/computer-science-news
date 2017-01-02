@@ -63,8 +63,7 @@ public class NewsListActivity extends AppCompatActivity
         }
 
         if (isLoading) {
-            getSupportLoaderManager().initLoader(PAGE_LOADER, null,
-                    NewsListActivity.this);
+            getSupportLoaderManager().initLoader(PAGE_LOADER, null, this);
         }
 
         if (isFirstLoad) {

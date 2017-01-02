@@ -30,9 +30,10 @@ public class News {
 
     private void parseContent() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            content = Html.fromHtml(html.toString(), Html.FROM_HTML_MODE_LEGACY).toString();
+            content = Html.fromHtml(html.toString().replaceAll("<img.+?>", ""),
+                    Html.FROM_HTML_MODE_LEGACY).toString();
         } else {
-            content = Html.fromHtml(html.toString()).toString();
+            content = Html.fromHtml(html.toString().replaceAll("<img.+?>", "")).toString();
         }
     }
 
