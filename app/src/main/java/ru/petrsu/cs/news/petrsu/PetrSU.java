@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews.petrsu;
+package ru.petrsu.cs.news.petrsu;
 
 import java.util.Calendar;
 

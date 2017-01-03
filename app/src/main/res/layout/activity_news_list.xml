@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
-    tools:context="cs.petrsu.ru.imitnews.NewsListActivity">
+    tools:context="ru.petrsu.cs.news.NewsListActivity">
 
     <android.support.design.widget.AppBarLayout
     android:id="@+id/app_bar"
@@ -31,6 +31,6 @@
     android:layout_weight="1"
     android:scrollbars="vertical"
     app:layoutManager="LinearLayoutManager"
-    tools:context="cs.petrsu.ru.imitnews.NewsListActivity"
+    tools:context="ru.petrsu.cs.news.NewsListActivity"
     tools:listitem="@layout/news_list_content" />
 </LinearLayout>

@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews.remote;
+package ru.petrsu.cs.news.remote;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

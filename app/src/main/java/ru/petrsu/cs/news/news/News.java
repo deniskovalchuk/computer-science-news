@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews.news;
+package ru.petrsu.cs.news.news;
 
 import android.os.Build;
 import android.text.Html;

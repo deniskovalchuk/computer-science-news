@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews.remote;
+package ru.petrsu.cs.news.remote;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
@@ -8,8 +8,8 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.util.List;
 
-import cs.petrsu.ru.imitnews.news.News;
-import cs.petrsu.ru.imitnews.news.NewsLab;
+import ru.petrsu.cs.news.news.News;
+import ru.petrsu.cs.news.news.NewsLab;
 
 /**
  * Created by Kovalchuk Denis on 22.11.16.

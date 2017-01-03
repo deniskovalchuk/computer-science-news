@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews;
+package ru.petrsu.cs.news;
 
 /**
  * Created by Kovalchuk Denis on 22.12.16.

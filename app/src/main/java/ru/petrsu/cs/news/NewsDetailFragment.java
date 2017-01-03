@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews;
+package ru.petrsu.cs.news;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -9,9 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
-import cs.petrsu.ru.imitnews.news.News;
-import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.petrsu.PetrSU;
+import ru.petrsu.cs.news.news.News;
+import ru.petrsu.cs.news.news.NewsLab;
+import ru.petrsu.cs.news.petrsu.PetrSU;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.

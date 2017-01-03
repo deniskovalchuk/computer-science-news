@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews;
+package ru.petrsu.cs.news;
 
 import android.content.Context;
 import android.content.Intent;
@@ -21,10 +21,10 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import cs.petrsu.ru.imitnews.news.News;
-import cs.petrsu.ru.imitnews.news.NewsLab;
-import cs.petrsu.ru.imitnews.petrsu.PetrSU;
-import cs.petrsu.ru.imitnews.remote.HtmlPageLoader;
+import ru.petrsu.cs.news.news.News;
+import ru.petrsu.cs.news.news.NewsLab;
+import ru.petrsu.cs.news.petrsu.PetrSU;
+import ru.petrsu.cs.news.remote.HtmlPageLoader;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.

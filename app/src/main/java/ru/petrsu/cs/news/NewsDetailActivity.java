@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews;
+package ru.petrsu.cs.news;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +11,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
-import cs.petrsu.ru.imitnews.news.News;
-import cs.petrsu.ru.imitnews.news.NewsLab;
+import ru.petrsu.cs.news.news.News;
+import ru.petrsu.cs.news.news.NewsLab;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.

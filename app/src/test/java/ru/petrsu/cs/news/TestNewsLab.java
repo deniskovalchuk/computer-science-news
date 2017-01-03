@@ -1,4 +1,4 @@
-package cs.petrsu.ru.imitnews;
+package ru.petrsu.cs.news;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -9,8 +9,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
-import cs.petrsu.ru.imitnews.news.News;
-import cs.petrsu.ru.imitnews.news.NewsLab;
+import ru.petrsu.cs.news.news.News;
+import ru.petrsu.cs.news.news.NewsLab;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
