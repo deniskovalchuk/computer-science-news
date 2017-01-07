@@ -5,32 +5,44 @@
     android:id="@+id/activity_news_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:fitsSystemWindows="true"
+    android:orientation="vertical"
     tools:context="ru.petrsu.cs.news.NewsListActivity">
 
     <android.support.design.widget.AppBarLayout
-    android:id="@+id/app_bar"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:theme="@style/AppTheme.AppBarOverlay">
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v7.widget.RecyclerView
-    android:id="@+id/news_list"
-    android:name="cs.petrsu.ru.imitnews.NewListFragment"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    android:scrollbars="vertical"
-    app:layoutManager="LinearLayoutManager"
-    tools:context="ru.petrsu.cs.news.NewsListActivity"
-    tools:listitem="@layout/news_list_content" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/news_list"
+            android:name="cs.petrsu.ru.imitnews.NewListFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:visibility="gone"
+            app:layoutManager="LinearLayoutManager"
+            tools:context="ru.petrsu.cs.news.NewsListActivity"
+            tools:listitem="@layout/news_list_content" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+        
+    </FrameLayout>
 </LinearLayout>

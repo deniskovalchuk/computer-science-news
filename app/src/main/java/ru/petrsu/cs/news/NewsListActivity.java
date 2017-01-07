@@ -45,6 +45,7 @@ public class NewsListActivity extends AppCompatActivity
     private LinearLayoutManager layoutManager;
     private RecyclerView newsRecyclerView;
     private RecyclerViewAdapter adapter;
+    private ProgressBar progressBar;
     private Snackbar snackbar;
 
     @Override
@@ -53,6 +54,8 @@ public class NewsListActivity extends AppCompatActivity
         setContentView(R.layout.activity_news_list);
 
         newsLab = NewsLab.getInstance();
+
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
         if (savedInstanceState != null) {
             isFirstLoad = savedInstanceState.getBoolean(KEY_FIRST_LOAD);
@@ -111,6 +114,8 @@ public class NewsListActivity extends AppCompatActivity
             }
         });
         newsRecyclerView.setAdapter(adapter);
+        newsRecyclerView.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
