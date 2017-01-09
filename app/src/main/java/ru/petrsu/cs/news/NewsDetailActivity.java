@@ -62,7 +62,9 @@ public class NewsDetailActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             NewsDetailFragment fragment = NewsDetailFragment.newInstance(newsId);
-            getSupportFragmentManager().beginTransaction().add(R.id.new_detail_container, fragment)
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.new_detail_container, fragment)
                     .commit();
         }
     }
