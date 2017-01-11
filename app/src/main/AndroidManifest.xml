@@ -30,6 +30,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.petrsu.cs.news.NewsListActivity" />
         </activity>
+        <activity
+            android:name="ru.petrsu.cs.news.SearchActivity"
+            android:parentActivityName="ru.petrsu.cs.news.NewsListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

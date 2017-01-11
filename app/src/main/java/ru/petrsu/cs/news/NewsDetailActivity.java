@@ -45,6 +45,7 @@ public class NewsDetailActivity extends AppCompatActivity {
         }
 
         int newsId = getIntent().getIntExtra(EXTRA_NEWS_ID, 0);
+
         final News news = newsLab.getNews(newsId);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -71,7 +72,7 @@ public class NewsDetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            navigateUpTo(new Intent(this, NewsListActivity.class));
+            navigateUpTo(new Intent(this, getApplicationContext().getClass()));
             return true;
         }
         return super.onOptionsItemSelected(item);

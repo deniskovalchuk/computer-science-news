@@ -35,6 +35,6 @@ public class HtmlPageLoader extends AsyncTaskLoader {
         } catch (IOException exc) {
             return null;
         }
-        return newsLab.createNewsList(document);
+        return newsLab.createData(document);
     }
 }

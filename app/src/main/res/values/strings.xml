@@ -9,4 +9,7 @@
     <string name="share">share</string>
     <string name="replay">Replay</string>
     <string name="no_news">В этом году ещё нет новостей</string>
+    <string name="search_hint">Введите поисковый запрос</string>
+    <string name="no_result">Ничего не найдено</string>
+    <string name="search">search</string>
 </resources>

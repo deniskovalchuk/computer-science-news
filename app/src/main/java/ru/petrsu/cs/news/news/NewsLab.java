@@ -14,51 +14,96 @@ import java.util.List;
 
 public class NewsLab {
     private static final NewsLab newsLab = new NewsLab();
-    private static List<News> newsList;
+    private static List<News> currentData;
+    private static List<News> searchData;
+    private static List<News> allData;
 
     private NewsLab() {
-        newsList = new ArrayList<>();
+        currentData = new ArrayList<>();
+        searchData = new ArrayList<>();
+        allData = new ArrayList<>();
+        currentData = allData;
     }
 
     public static NewsLab getInstance() {
         return newsLab;
     }
 
-    public List<News> getNewsList() {
-        return newsList;
+    public List<News> getData() {
+        return currentData;
     }
 
-    public void setNewsList(List<News> newsList) {
-        NewsLab.newsList = newsList;
+    public void setSearchData() {
+        currentData = searchData;
     }
 
-    public void addNewsList(List<News> newsList) {
-        NewsLab.newsList.addAll(newsList);
+    public void setAllData() {
+        currentData = allData;
+    }
+
+    public void clearSearchList() {
+        searchData.clear();
+    }
+
+    public void setCurrentData(List<News> currentData) {
+        NewsLab.currentData = currentData;
+    }
+
+    public void addCurrentData(List<News> currentData) {
+        NewsLab.currentData.addAll(currentData);
     }
 
     public News getNews(int position) {
-        return newsList.get(position);
+        return currentData.get(position);
     }
 
     public void addNews(News news) {
-        newsList.add(news);
+        currentData.add(news);
     }
 
-    public void addNewsListToEnd(Document document) {
-        newsList.addAll(createNewsList(document));
+    public void addCurrentDataToEnd(Document document) {
+        currentData.addAll(createData(document));
     }
 
-    public void addNewsListToEnd(List<News> newsList) {
-        NewsLab.newsList.addAll(newsList);
+    public void addCurrentDataToEnd(List<News> currentData) {
+        NewsLab.currentData.addAll(currentData);
     }
 
-    public List<News> createNewsList(Document document) {
-        List<News> newsList = new ArrayList<>();
+    public void addData(List<News> data) {
+        NewsLab.allData.addAll(data);
+    }
+
+    public List<News> createData(Document document) {
+        List<News> currentData = new ArrayList<>();
         Elements allNews = document.select("div[id]");
         for (Element currentNews : allNews) {
             Element newsHtml = currentNews.select("div").get(0);
-            newsList.add(new News(newsHtml));
+            currentData.add(new News(newsHtml));
         }
-        return newsList;
+        return currentData;
+    }
+
+    public List<News> find(String query) {
+        List<News> searchResult = new ArrayList<>();
+        query = query.toUpperCase();
+        for (News news : allData) {
+            String content = news.getContent().toUpperCase();
+            if (content.contains(query)) {
+                searchResult.add(news);
+            }
+        }
+        return searchResult;
+    }
+
+    public List<News> find(List<News> data, String query) {
+        List<News> searchResult = new ArrayList<>();
+        query = query.toUpperCase();
+        for (News news : data) {
+            String content = news.getContent().toUpperCase();
+            if (content.contains(query)) {
+                searchResult.add(news);
+            }
+        }
+        return searchResult;
     }
 }

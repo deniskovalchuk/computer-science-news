@@ -17,15 +17,15 @@ public class PetrSU {
     private static String url;
 
     static {
-        currentNewsYear = Calendar.getInstance().get(Calendar.YEAR) - 1;
-        url = defaultUrl;
+        currentNewsYear = Calendar.getInstance().get(Calendar.YEAR);
+        setArchiveUrl();
     }
 
     private PetrSU() {
 
     }
 
-    public static void setArchiveUrl() {
+    private static void setArchiveUrl() {
         url = defaultUrl + archivePath + Integer.toString(currentNewsYear) + filenameExtensionXml;
     }
 
