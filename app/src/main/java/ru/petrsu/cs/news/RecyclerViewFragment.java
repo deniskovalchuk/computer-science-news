@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
@@ -25,15 +26,12 @@ import ru.petrsu.cs.news.petrsu.PetrSU;
  */
 
 public abstract class RecyclerViewFragment extends Fragment {
-    protected static final String KEY_FIRST_LOAD = "isFirstLoad";
+    private static final String TAG = "RecyclerViewFragment";
     protected static final String KEY_LOADING = "isLoading";
     protected static final int PAGE_LOADER = 0;
-
-    protected boolean isFirstLoad;
     protected boolean isLoading;
-    protected NewsLab newsLab;
 
-    protected LinearLayoutManager layoutManager;
+    private LinearLayoutManager layoutManager;
     protected RecyclerView newsRecyclerView;
     protected RecyclerViewAdapter adapter;
     protected ProgressBar progressBar;
@@ -42,24 +40,20 @@ public abstract class RecyclerViewFragment extends Fragment {
 
     public abstract android.support.v4.app.LoaderManager.LoaderCallbacks getLoaderContext();
 
-    protected void createRecyclerView() {
+    protected void createRecyclerView(final List<News> newsList) {
         newsRecyclerView = (RecyclerView) rootView.findViewById(R.id.news_list);
         newsRecyclerView.setHasFixedSize(true);
 
         layoutManager = new LinearLayoutManager(getActivity());
         newsRecyclerView.setLayoutManager(layoutManager);
 
-        adapter = new RecyclerViewAdapter(newsLab.getNewsList());
+        adapter = new RecyclerViewAdapter();
+        adapter.setData(newsList);
         adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore() {
-                // add progress bar item
-                newsLab.getNewsList().add(null);
-                adapter.notifyItemInserted(newsLab.getNewsList().size() - 1);
-                getActivity()
-                        .getSupportLoaderManager()
-                        .restartLoader(PAGE_LOADER, null, getLoaderContext())
-                        .forceLoad();
+                adapter.addProgressItem();
+                startLoad();
             }
         });
         newsRecyclerView.setAdapter(adapter);
@@ -73,10 +67,7 @@ public abstract class RecyclerViewFragment extends Fragment {
                 .setAction(R.string.replay, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        getActivity()
-                                .getSupportLoaderManager()
-                                .restartLoader(PAGE_LOADER, null, getLoaderContext())
-                                .forceLoad();
+                        startLoad();
                     }
                 });
         snackbar.show();
@@ -85,30 +76,31 @@ public abstract class RecyclerViewFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_FIRST_LOAD, isFirstLoad);
         outState.putBoolean(KEY_LOADING, isLoading);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (isLoading) {
-            getActivity().getSupportLoaderManager().getLoader(PAGE_LOADER).forceLoad();
-        }
+    protected boolean isFirstLoad() {
+        return NewsLab.getInstance().getFullData().isEmpty();
+    }
+
+    protected void startLoad() {
+        isLoading = true;
+        getActivity()
+                .getSupportLoaderManager()
+                .restartLoader(PAGE_LOADER, null, getLoaderContext())
+                .forceLoad();
     }
 
     protected class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        private final int VIEW_ITEM = 1;
         private final int VIEW_PROGRESS_BAR = 0;
-        private final List<News> newsList;
+        private final int VIEW_ITEM = 1;
 
-        private int visibleThreshold = 5;
         private int lastVisibleItem, totalItemCount;
+        private int visibleThreshold = 5;
+        private List<News> newsList;
         private OnLoadMoreListener onLoadMoreListener;
 
-        RecyclerViewAdapter(List<News> newsList) {
-            this.newsList = newsList;
-
+        RecyclerViewAdapter() {
             if (newsRecyclerView.getLayoutManager() instanceof LinearLayoutManager) {
                 newsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
@@ -116,7 +108,7 @@ public abstract class RecyclerViewFragment extends Fragment {
                         super.onScrolled(recyclerView, dx, dy);
                         totalItemCount = layoutManager.getItemCount();
                         lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-                        if (PetrSU.isValidYear() && !isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
+                        if (PetrSU.isValidUrl() && !isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
                             isLoading = true;
                             if (onLoadMoreListener != null) {
                                 onLoadMoreListener.onLoadMore();
@@ -127,9 +119,63 @@ public abstract class RecyclerViewFragment extends Fragment {
             }
         }
 
+        public void setData(List<News> data) {
+            if (data == null) {
+                return;
+            }
+            newsList = data;
+            notifyDataSetChanged();
+        }
+
+        List<News> getData() {
+            if (newsList == null) {
+                newsList = new ArrayList<>();
+            }
+            return newsList;
+        }
+
+        void addData(List<News> data) {
+            if (data != null && newsList != null && !data.isEmpty()) {
+                int startPosition = newsList.size();
+                int endPosition = newsList.size() + data.size();
+                newsList.addAll(data);
+                for (int i = startPosition; i < endPosition; i++) {
+                    notifyItemInserted(i);
+                }
+            }
+        }
+
+        void clear() {
+            if (newsList != null) {
+                newsList.clear();
+                notifyDataSetChanged();
+            }
+        }
+
+        void addProgressItem() {
+            if (newsList != null) {
+                newsList.add(null);
+                notifyItemInserted(newsList.size() - 1);
+            }
+        }
+
+        void removeProgressItem() {
+            if (newsList != null
+                    && !newsList.isEmpty()
+                    && newsList.get(newsList.size() - 1) == null) {
+                newsList.remove(newsList.size() - 1);
+                notifyItemRemoved(newsList.size());
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return newsList.size();
+        }
+
         @Override
         public int getItemViewType(int position) {
-            return newsList.get(position) != null ? VIEW_ITEM : VIEW_PROGRESS_BAR;
+                return newsList.get(position) != null ? VIEW_ITEM : VIEW_PROGRESS_BAR;
         }
 
         @Override
@@ -148,7 +194,7 @@ public abstract class RecyclerViewFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+        public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
             if (holder instanceof ViewHolder) {
                 News news = newsList.get(position);
                 ((ViewHolder) holder).titleTextView.setText(news.getTitle());
@@ -156,7 +202,7 @@ public abstract class RecyclerViewFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         Context context = v.getContext();
-                        Intent intent = NewsDetailActivity.newIntent(context, position);
+                        Intent intent = NewsDetailActivity.newIntent(context, holder.getAdapterPosition());
                         context.startActivity(intent);
                     }
                 });
@@ -167,11 +213,6 @@ public abstract class RecyclerViewFragment extends Fragment {
 
         void setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
             this.onLoadMoreListener = onLoadMoreListener;
-        }
-
-        @Override
-        public int getItemCount() {
-            return newsList.size();
         }
 
         private class ProgressViewHolder extends RecyclerView.ViewHolder {

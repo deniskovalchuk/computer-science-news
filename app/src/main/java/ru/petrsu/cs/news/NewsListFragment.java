@@ -1,10 +1,14 @@
 package ru.petrsu.cs.news;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -22,19 +26,16 @@ import ru.petrsu.cs.news.remote.HtmlPageLoader;
  */
 
 public class NewsListFragment extends RecyclerViewFragment implements LoaderManager.LoaderCallbacks<List<News>> {
-    @Override
+    private static final String TAG = "NewsListFragment";
+    private NewsLab newsLab;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         newsLab = NewsLab.getInstance();
 
-        if (savedInstanceState != null) {
-            isFirstLoad = savedInstanceState.getBoolean(KEY_FIRST_LOAD);
-            isLoading = savedInstanceState.getBoolean(KEY_LOADING);
-        } else {
-            isFirstLoad = true;
-            isLoading = false;
-        }
+        isLoading = savedInstanceState != null && savedInstanceState.getBoolean(KEY_LOADING);
     }
 
     @Nullable
@@ -42,18 +43,57 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_news_list, container, false);
         progressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.VISIBLE);
 
         if (isLoading) {
             getActivity().getSupportLoaderManager().initLoader(PAGE_LOADER, null, this);
         }
 
-        if (isFirstLoad) {
-            getActivity().getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
+        if (isFirstLoad()) {
+            startLoad();
         } else {
-            createRecyclerView();
+            createRecyclerView(newsLab.getFullData());
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_LOADING, isLoading);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        newsLab.setFullDataMode();
+
+        if (adapter != null) {
+            adapter.setData(newsLab.getFullData());
+        }
+
+        if (isLoading) {
+            getActivity().getSupportLoaderManager().getLoader(PAGE_LOADER).forceLoad();
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.news_list_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_find:
+                Intent intent = new Intent(getActivity(), SearchActivity.class);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -71,34 +111,34 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
     }
 
     @Override
-    public void onLoadFinished(Loader<List<News>> loader, final List<News> newsList) {
-        if (newsList == null || newsList.isEmpty()) {
-            if (isFirstLoad) {
+    public void onLoadFinished(Loader<List<News>> loader, final List<News> loadData) {
+        isLoading = false;
+
+        if (loadData == null) {
+            if (adapter.getData().isEmpty()) {
                 createSnackbarReplyConnection();
             } else {
-                newsLab.getNewsList().remove(newsLab.getNewsList().size() - 1);
-                adapter.notifyItemRemoved(newsLab.getNewsList().size() + 1);
+                adapter.removeProgressItem();
             }
-        } else {
-            if (isFirstLoad) {
-                if (snackbar != null && snackbar.isShown()) {
-                    snackbar.dismiss();
-                }
-                isFirstLoad = false;
-                PetrSU.setArchiveUrl();
-                createRecyclerView();
-            } else {
-                newsLab.getNewsList().remove(newsLab.getNewsList().size() - 1);
-                PetrSU.setPreviousYear();
-            }
-            int startPosition = newsLab.getNewsList().size() + 1;
-            int endPosition = startPosition + newsList.size();
-            newsLab.addNewsListToEnd(newsList);
-            for (int i = startPosition; i < endPosition; i++) {
-                adapter.notifyItemInserted(startPosition);
-            }
+            return;
         }
-        isLoading = false;
+
+        PetrSU.updateUrl();
+
+        if (loadData.isEmpty() && PetrSU.isValidUrl()) {
+            startLoad();
+            return;
+        }
+
+        if (newsRecyclerView == null) {
+            if (snackbar != null && snackbar.isShown()) {
+                snackbar.dismiss();
+            }
+            createRecyclerView(newsLab.getFullData());
+        } else {
+            adapter.removeProgressItem();
+        }
+        adapter.addData(loadData);
     }
 
     @Override

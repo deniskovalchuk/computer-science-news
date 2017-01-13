@@ -29,11 +29,11 @@ public class News {
     }
 
     private void parseContent() {
+        String contentWithoutImg = html.toString().replaceAll("<img.+?>", "");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            content = Html.fromHtml(html.toString().replaceAll("<img.+?>", ""),
-                    Html.FROM_HTML_MODE_LEGACY).toString();
+            content = Html.fromHtml(contentWithoutImg, Html.FROM_HTML_MODE_LEGACY).toString();
         } else {
-            content = Html.fromHtml(html.toString().replaceAll("<img.+?>", "")).toString();
+            content = Html.fromHtml(contentWithoutImg).toString();
         }
     }
 

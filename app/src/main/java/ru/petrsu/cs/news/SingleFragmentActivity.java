@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
  */
 
 public abstract class SingleFragmentActivity extends AppCompatActivity {
-
     protected abstract Fragment getFragment();
     protected abstract void createAppBar();
 
@@ -20,6 +19,7 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_list);
+
         createAppBar();
 
         FragmentManager fm = getSupportFragmentManager();

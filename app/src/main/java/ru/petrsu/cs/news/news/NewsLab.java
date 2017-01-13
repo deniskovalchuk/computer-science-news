@@ -14,51 +14,81 @@ import java.util.List;
 
 public class NewsLab {
     private static final NewsLab newsLab = new NewsLab();
-    private static List<News> newsList;
+    private static List<News> currentData;
+    private static List<News> searchData;
+    private static List<News> fullData;
 
     private NewsLab() {
-        newsList = new ArrayList<>();
+        searchData = new ArrayList<>();
+        fullData = new ArrayList<>();
+        currentData = fullData;
     }
 
     public static NewsLab getInstance() {
         return newsLab;
     }
 
-    public List<News> getNewsList() {
-        return newsList;
+    public void setSearchMode() {
+        currentData = searchData;
     }
 
-    public void setNewsList(List<News> newsList) {
-        NewsLab.newsList = newsList;
+    public void setFullDataMode() {
+        currentData = fullData;
     }
 
-    public void addNewsList(List<News> newsList) {
-        NewsLab.newsList.addAll(newsList);
+    public List<News> getFullData() {
+        return fullData;
+    }
+
+    public List<News> getSearchData() {
+        return searchData;
+    }
+
+    public void clearSearchData() {
+        searchData.clear();
     }
 
     public News getNews(int position) {
-        return newsList.get(position);
+        return currentData.get(position);
     }
 
-    public void addNews(News news) {
-        newsList.add(news);
+    public void addDataToFullData(List<News> data) {
+        fullData.addAll(data);
     }
 
-    public void addNewsListToEnd(Document document) {
-        newsList.addAll(createNewsList(document));
+    public void addDataToSearchData(List<News> data) {
+        searchData.addAll(data);
     }
 
-    public void addNewsListToEnd(List<News> newsList) {
-        NewsLab.newsList.addAll(newsList);
-    }
-
-    public List<News> createNewsList(Document document) {
-        List<News> newsList = new ArrayList<>();
+    public List<News> createData(Document document) {
+        List<News> data = new ArrayList<>();
         Elements allNews = document.select("div[id]");
         for (Element currentNews : allNews) {
             Element newsHtml = currentNews.select("div").get(0);
-            newsList.add(new News(newsHtml));
+            data.add(new News(newsHtml));
         }
-        return newsList;
+        return data;
+    }
+
+    public List<News> find(String query) {
+        return find(fullData, query);
+    }
+
+    public List<News> find(List<News> data, String query) {
+        List<News> searchResult = new ArrayList<>();
+        if (query == null) {
+            return searchResult;
+        }
+        query = query.toUpperCase();
+        for (News news : data) {
+            if (news == null) {
+                continue;
+            }
+            String content = news.getContent().toUpperCase();
+            if (content.contains(query)) {
+                searchResult.add(news);
+            }
+        }
+        return searchResult;
     }
 }

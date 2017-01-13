@@ -26,14 +26,14 @@ public class TestNewsLab {
     @Test
     public void createNewsList() {
         Document document = Jsoup.parse("Fooz! Bar!");
-        newsLab.createNewsList(document);
-        assertTrue(newsLab.getNewsList().isEmpty());
+        newsLab.createData(document);
+        assertTrue(newsLab.getFullData().isEmpty());
     }
 
     @Test
     public void createNewsListFailHtml() {
         Document document = getFailDocument();
-        List<News> newsList = newsLab.createNewsList(document);
+        List<News> newsList = newsLab.createData(document);
         assertEquals(newsList.size(), 5);
     }
 
@@ -55,14 +55,7 @@ public class TestNewsLab {
     @Test(expected = IndexOutOfBoundsException.class)
     public void outOfBounds() {
         Document document = getFailDocument();
-        List<News> newsList = newsLab.createNewsList(document);
+        List<News> newsList = newsLab.createData(document);
         newsList.get(6);
-    }
-
-    @Test
-    public void addNewsListToEnd() {
-        Document document = getFailDocument();
-        newsLab.addNewsListToEnd(document);
-        assertEquals(newsLab.getNewsList().size(), 5);
     }
 }

@@ -19,7 +19,6 @@ import ru.petrsu.cs.news.petrsu.PetrSU;
  */
 
 public class NewsDetailFragment extends Fragment {
-    private static final String TAG = "NewsDetailFragment";
     private static final String ARG_NEWS_ID = "item_id";
     private static News news;
 

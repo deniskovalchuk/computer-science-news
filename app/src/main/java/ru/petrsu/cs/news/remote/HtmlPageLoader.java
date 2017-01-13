@@ -17,7 +17,6 @@ import ru.petrsu.cs.news.news.NewsLab;
  */
 
 public class HtmlPageLoader extends AsyncTaskLoader {
-    private static final String TAG = "HtmlPageLoader";
     private NewsLab newsLab;
     private HtmlPage htmlPage;
 
@@ -35,6 +34,6 @@ public class HtmlPageLoader extends AsyncTaskLoader {
         } catch (IOException exc) {
             return null;
         }
-        return newsLab.createNewsList(document);
+        return newsLab.createData(document);
     }
 }
