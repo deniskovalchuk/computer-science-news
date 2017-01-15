@@ -3,7 +3,6 @@ package ru.petrsu.cs.news;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,27 +24,32 @@ import ru.petrsu.cs.news.petrsu.PetrSU;
  * Email: deniskk25@gmail.com
  */
 
-public abstract class RecyclerViewFragment extends Fragment {
+public abstract class EndlessRecyclerViewFragment extends Fragment {
     private static final String TAG = "RecyclerViewFragment";
     protected static final String KEY_LOADING = "isLoading";
     protected static final int PAGE_LOADER = 0;
     protected boolean isLoading;
 
     private LinearLayoutManager layoutManager;
-    protected RecyclerView newsRecyclerView;
-    protected RecyclerViewAdapter adapter;
-    protected ProgressBar progressBar;
-    protected Snackbar snackbar;
-    protected View rootView;
+    private RecyclerView endlessRecyclerView;
+    private RecyclerViewAdapter adapter;
 
     public abstract android.support.v4.app.LoaderManager.LoaderCallbacks getLoaderContext();
 
-    protected void createRecyclerView(final List<News> newsList) {
-        newsRecyclerView = (RecyclerView) rootView.findViewById(R.id.news_list);
-        newsRecyclerView.setHasFixedSize(true);
+    protected RecyclerViewAdapter getAdapter() {
+        return adapter;
+    }
+
+    protected RecyclerView getRecyclerView() {
+        return endlessRecyclerView;
+    }
+
+    protected void createRecyclerView(View rootView, final List<News> newsList) {
+        endlessRecyclerView = (RecyclerView) rootView.findViewById(R.id.news_list);
+        endlessRecyclerView.setHasFixedSize(true);
 
         layoutManager = new LinearLayoutManager(getActivity());
-        newsRecyclerView.setLayoutManager(layoutManager);
+        endlessRecyclerView.setLayoutManager(layoutManager);
 
         adapter = new RecyclerViewAdapter();
         adapter.setData(newsList);
@@ -56,21 +60,9 @@ public abstract class RecyclerViewFragment extends Fragment {
                 startLoad();
             }
         });
-        newsRecyclerView.setAdapter(adapter);
-        newsRecyclerView.setVisibility(View.VISIBLE);
-        progressBar.setVisibility(View.GONE);
-    }
-
-    protected void createSnackbarReplyConnection() {
-        snackbar = Snackbar.make(getActivity().findViewById(R.id.activity_news_list),
-                getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.replay, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        startLoad();
-                    }
-                });
-        snackbar.show();
+        endlessRecyclerView.setAdapter(adapter);
+        endlessRecyclerView.setVisibility(View.VISIBLE);
+//        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -101,8 +93,8 @@ public abstract class RecyclerViewFragment extends Fragment {
         private OnLoadMoreListener onLoadMoreListener;
 
         RecyclerViewAdapter() {
-            if (newsRecyclerView.getLayoutManager() instanceof LinearLayoutManager) {
-                newsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            if (endlessRecyclerView.getLayoutManager() instanceof LinearLayoutManager) {
+                endlessRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
                     public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                         super.onScrolled(recyclerView, dx, dy);
@@ -147,8 +139,9 @@ public abstract class RecyclerViewFragment extends Fragment {
 
         void clear() {
             if (newsList != null) {
+                int count = newsList.size();
                 newsList.clear();
-                notifyDataSetChanged();
+                notifyItemRangeRemoved(0, count);
             }
         }
 
@@ -166,6 +159,10 @@ public abstract class RecyclerViewFragment extends Fragment {
                 newsList.remove(newsList.size() - 1);
                 notifyItemRemoved(newsList.size());
             }
+        }
+
+        void notifyData() {
+            notifyDataSetChanged();
         }
 
         @Override

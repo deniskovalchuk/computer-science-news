@@ -17,6 +17,7 @@ import ru.petrsu.cs.news.news.NewsLab;
  */
 
 public class HtmlPageLoader extends AsyncTaskLoader {
+    private static final String TAG = "HtmlPageLoader";
     private NewsLab newsLab;
     private HtmlPage htmlPage;
 

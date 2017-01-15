@@ -22,6 +22,26 @@ public class News {
         parseContent();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        News news = (News) o;
+
+        if (html != null ? !html.toString().equals(news.html.toString()) : news.html != null) return false;
+        if (title != null ? !title.equals(news.title) : news.title != null) return false;
+        return content != null ? content.equals(news.content) : news.content == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = html.toString().hashCode();
+        result = 31 * result + title.hashCode();
+        result = 31 * result + content.hashCode();
+        return result;
+    }
+
     private void parseTitle() {
         String date = html.select("b").text();
         String title = html.select("span.title").text();

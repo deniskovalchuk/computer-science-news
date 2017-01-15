@@ -3,6 +3,7 @@ package ru.petrsu.cs.news;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
@@ -25,9 +26,20 @@ import ru.petrsu.cs.news.remote.HtmlPageLoader;
  * Email: deniskk25@gmail.com
  */
 
-public class NewsListFragment extends RecyclerViewFragment implements LoaderManager.LoaderCallbacks<List<News>> {
+public class NewsListFragment extends EndlessRecyclerViewFragment
+        implements LoaderManager.LoaderCallbacks<List<News>>, ManageEndlessRecyclerView {
     private static final String TAG = "NewsListFragment";
+
+    private ProgressBar progressBar;
+    private Snackbar snackbar;
+    private View rootView;
+
     private NewsLab newsLab;
+
+    @Override
+    public LoaderManager.LoaderCallbacks getLoaderContext() {
+        return this;
+    }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,14 +57,11 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
         progressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.VISIBLE);
 
-        if (isLoading) {
-            getActivity().getSupportLoaderManager().initLoader(PAGE_LOADER, null, this);
-        }
-
         if (isFirstLoad()) {
             startLoad();
         } else {
-            createRecyclerView(newsLab.getFullData());
+            createRecyclerView(rootView, newsLab.getFullData());
+            progressBar.setVisibility(View.GONE);
         }
 
         return rootView;
@@ -67,14 +76,15 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
     @Override
     public void onResume() {
         super.onResume();
+
         newsLab.setFullDataMode();
 
-        if (adapter != null) {
-            adapter.setData(newsLab.getFullData());
+        if (getAdapter() != null) {
+            getAdapter().notifyData();
         }
 
         if (isLoading) {
-            getActivity().getSupportLoaderManager().getLoader(PAGE_LOADER).forceLoad();
+            getActivity().getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
         }
     }
 
@@ -88,8 +98,14 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_find:
+                if (isLoading && getAdapter() != null) {
+                    getAdapter().removeProgressItem();
+                    if (getActivity().getSupportLoaderManager().getLoader(PAGE_LOADER) != null) {
+                        getActivity().getSupportLoaderManager().getLoader(PAGE_LOADER).abandon();
+                    }
+                }
                 Intent intent = new Intent(getActivity(), SearchActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 1);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -97,8 +113,8 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
     }
 
     @Override
-    public LoaderManager.LoaderCallbacks getLoaderContext() {
-        return this;
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        isLoading = false;
     }
 
     @Override
@@ -115,10 +131,10 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
         isLoading = false;
 
         if (loadData == null) {
-            if (adapter.getData().isEmpty()) {
+            if (getAdapter().getData().isEmpty()) {
                 createSnackbarReplyConnection();
             } else {
-                adapter.removeProgressItem();
+                getAdapter().removeProgressItem();
             }
             return;
         }
@@ -130,19 +146,38 @@ public class NewsListFragment extends RecyclerViewFragment implements LoaderMana
             return;
         }
 
-        if (newsRecyclerView == null) {
-            if (snackbar != null && snackbar.isShown()) {
-                snackbar.dismiss();
-            }
-            createRecyclerView(newsLab.getFullData());
+        if (getRecyclerView() == null) {
+            destroySnackBarReplyConnection();
+            createRecyclerView(rootView, newsLab.getFullData());
+            progressBar.setVisibility(View.GONE);
         } else {
-            adapter.removeProgressItem();
+            getAdapter().removeProgressItem();
         }
-        adapter.addData(loadData);
+        getAdapter().addData(loadData);
     }
 
     @Override
     public void onLoaderReset(Loader<List<News>> loader) {
 
+    }
+
+    @Override
+    public void createSnackbarReplyConnection() {
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.activity_news_list),
+                getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.replay, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        startLoad();
+                    }
+                });
+        snackbar.show();
+    }
+
+    @Override
+    public void destroySnackBarReplyConnection() {
+        if (snackbar != null && snackbar.isShown()) {
+            snackbar.dismiss();
+        }
     }
 }
