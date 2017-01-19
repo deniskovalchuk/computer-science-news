@@ -3,6 +3,7 @@ package ru.petrsu.cs.news;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,31 +18,78 @@ import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
-import ru.petrsu.cs.news.petrsu.PetrSU;
+import ru.petrsu.cs.news.petrsu.Url;
+
 
 /**
+ * Base class for fragments contains EndlessRecyclerView with News.
+ *
  * Created by Kovalchuk Denis on 09.01.17.
  * Email: deniskk25@gmail.com
  */
 
-public abstract class EndlessRecyclerViewFragment extends Fragment {
+public abstract class EndlessRecyclerViewFragment extends Fragment
+        implements ManageEndlessRecyclerView {
     private static final String TAG = "RecyclerViewFragment";
     protected static final String KEY_LOADING = "isLoading";
+    protected static final String KEY_URL = "url";
     protected static final int PAGE_LOADER = 0;
-    protected boolean isLoading;
-
     private LinearLayoutManager layoutManager;
     private RecyclerView endlessRecyclerView;
     private RecyclerViewAdapter adapter;
+    private Snackbar snackbar;
+
+    private boolean isLoading;
+    protected Url url;
 
     public abstract android.support.v4.app.LoaderManager.LoaderCallbacks getLoaderContext();
 
-    protected RecyclerViewAdapter getAdapter() {
-        return adapter;
+    protected void updateRecyclerView(List<News> data) {
+        if (adapter != null) {
+            adapter.addData(data);
+        }
     }
 
-    protected RecyclerView getRecyclerView() {
-        return endlessRecyclerView;
+    protected void clearRecyclerView() {
+        if (adapter != null) {
+            adapter.clear();
+        }
+    }
+
+    protected boolean hasRecyclerViewCreated() {
+        return endlessRecyclerView != null;
+    }
+
+    protected boolean isEmptyRecyclerView() {
+        return NewsLab.getInstance().getCurrentData().isEmpty();
+    }
+
+    protected void addProgressItem() {
+        if (adapter != null) {
+            adapter.addProgressItem();
+        }
+    }
+
+    protected void removeProgressItem() {
+        if (adapter != null) {
+            adapter.removeProgressItem();
+        }
+    }
+
+    protected boolean isLoading() {
+        return isLoading;
+    }
+
+    protected void setLoading(boolean isLoading) {
+        this.isLoading = isLoading;
+    }
+
+    protected void startLoad() {
+        isLoading = true;
+        getActivity()
+                .getSupportLoaderManager()
+                .restartLoader(PAGE_LOADER, null, getLoaderContext())
+                .forceLoad();
     }
 
     protected void createRecyclerView(View rootView, final List<News> newsList) {
@@ -62,25 +110,33 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
         });
         endlessRecyclerView.setAdapter(adapter);
         endlessRecyclerView.setVisibility(View.VISIBLE);
-//        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_LOADING, isLoading);
+        outState.putParcelable(KEY_URL, url);
     }
 
-    protected boolean isFirstLoad() {
-        return NewsLab.getInstance().getFullData().isEmpty();
+    @Override
+    public void createSnackbarReplyConnection() {
+        snackbar = Snackbar.make(getActivity().findViewById(R.id.activity_news_list),
+                getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.replay, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        startLoad();
+                    }
+                });
+        snackbar.show();
     }
 
-    protected void startLoad() {
-        isLoading = true;
-        getActivity()
-                .getSupportLoaderManager()
-                .restartLoader(PAGE_LOADER, null, getLoaderContext())
-                .forceLoad();
+    @Override
+    public void destroySnackBarReplyConnection() {
+        if (snackbar != null && snackbar.isShown()) {
+            snackbar.dismiss();
+        }
     }
 
     protected class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -100,7 +156,7 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
                         super.onScrolled(recyclerView, dx, dy);
                         totalItemCount = layoutManager.getItemCount();
                         lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-                        if (PetrSU.isValidUrl() && !isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
+                        if (url.isValid() && !isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
                             isLoading = true;
                             if (onLoadMoreListener != null) {
                                 onLoadMoreListener.onLoadMore();
@@ -111,19 +167,19 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
             }
         }
 
+        List<News> getData() {
+            if (newsList == null) {
+                newsList = new ArrayList<>();
+            }
+            return newsList;
+        }
+
         public void setData(List<News> data) {
             if (data == null) {
                 return;
             }
             newsList = data;
             notifyDataSetChanged();
-        }
-
-        List<News> getData() {
-            if (newsList == null) {
-                newsList = new ArrayList<>();
-            }
-            return newsList;
         }
 
         void addData(List<News> data) {
@@ -161,10 +217,6 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
             }
         }
 
-        void notifyData() {
-            notifyDataSetChanged();
-        }
-
         @Override
         public int getItemCount() {
             return newsList.size();
@@ -172,7 +224,7 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
 
         @Override
         public int getItemViewType(int position) {
-                return newsList.get(position) != null ? VIEW_ITEM : VIEW_PROGRESS_BAR;
+            return newsList.get(position) != null ? VIEW_ITEM : VIEW_PROGRESS_BAR;
         }
 
         @Override

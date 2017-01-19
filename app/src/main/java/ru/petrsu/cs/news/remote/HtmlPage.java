@@ -10,7 +10,7 @@ import java.io.IOException;
  * Email: deniskk25@gmail.com
  */
 
-public class HtmlPage {
+class HtmlPage {
     private final String url;
 
     HtmlPage(String url) {

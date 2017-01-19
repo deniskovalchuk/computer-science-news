@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
-import ru.petrsu.cs.news.news.NewsLab;
+import ru.petrsu.cs.news.news.NewsParser;
 
 /**
  * Created by Kovalchuk Denis on 22.11.16.
@@ -17,13 +17,10 @@ import ru.petrsu.cs.news.news.NewsLab;
  */
 
 public class HtmlPageLoader extends AsyncTaskLoader {
-    private static final String TAG = "HtmlPageLoader";
-    private NewsLab newsLab;
     private HtmlPage htmlPage;
 
     public HtmlPageLoader(Context context, String url) {
         super(context);
-        newsLab = NewsLab.getInstance();
         htmlPage = new HtmlPage(url);
     }
 
@@ -35,6 +32,6 @@ public class HtmlPageLoader extends AsyncTaskLoader {
         } catch (IOException exc) {
             return null;
         }
-        return newsLab.createData(document);
+        return NewsParser.createNewsList(document);
     }
 }

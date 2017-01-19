@@ -11,7 +11,7 @@ import android.webkit.WebView;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
-import ru.petrsu.cs.news.petrsu.PetrSU;
+import ru.petrsu.cs.news.petrsu.Url;
 
 /**
  * Created by Kovalchuk Denis on 28.11.16.
@@ -20,7 +20,9 @@ import ru.petrsu.cs.news.petrsu.PetrSU;
 
 public class NewsDetailFragment extends Fragment {
     private static final String ARG_NEWS_ID = "item_id";
+
     private static News news;
+    private Url url;
 
     public static NewsDetailFragment newInstance(int position) {
         Bundle arguments = new Bundle();
@@ -37,6 +39,7 @@ public class NewsDetailFragment extends Fragment {
         int position = getArguments().getInt(ARG_NEWS_ID);
         NewsLab newsLab = NewsLab.getInstance();
         news = newsLab.getNews(position);
+        url = new Url();
 
         Activity activity = this.getActivity();
         CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
@@ -51,7 +54,7 @@ public class NewsDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.news_detail, container, false);
         if (news != null) {
             WebView webView = (WebView) rootView.findViewById(R.id.fragment_detail_web_view);
-            webView.loadDataWithBaseURL(PetrSU.getUrl(), news.getHtml(),
+            webView.loadDataWithBaseURL(url.get(), news.getHtml(),
                     "text/html; charset = utf-8;", "utf-8", null);
         }
         return rootView;

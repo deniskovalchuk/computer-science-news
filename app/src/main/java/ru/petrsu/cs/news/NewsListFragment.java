@@ -3,7 +3,6 @@ package ru.petrsu.cs.news;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
@@ -18,7 +17,7 @@ import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
-import ru.petrsu.cs.news.petrsu.PetrSU;
+import ru.petrsu.cs.news.petrsu.Url;
 import ru.petrsu.cs.news.remote.HtmlPageLoader;
 
 /**
@@ -27,11 +26,10 @@ import ru.petrsu.cs.news.remote.HtmlPageLoader;
  */
 
 public class NewsListFragment extends EndlessRecyclerViewFragment
-        implements LoaderManager.LoaderCallbacks<List<News>>, ManageEndlessRecyclerView {
+        implements LoaderManager.LoaderCallbacks<List<News>> {
     private static final String TAG = "NewsListFragment";
 
     private ProgressBar progressBar;
-    private Snackbar snackbar;
     private View rootView;
 
     private NewsLab newsLab;
@@ -46,8 +44,15 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
         setHasOptionsMenu(true);
 
         newsLab = NewsLab.getInstance();
+        newsLab.setFullDataMode();
 
-        isLoading = savedInstanceState != null && savedInstanceState.getBoolean(KEY_LOADING);
+        url = new Url();
+
+        if (savedInstanceState != null) {
+            url = savedInstanceState.getParcelable(KEY_URL);
+        }
+
+        setLoading(savedInstanceState != null && savedInstanceState.getBoolean(KEY_LOADING));
     }
 
     @Nullable
@@ -55,35 +60,23 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_news_list, container, false);
         progressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
-        progressBar.setVisibility(View.VISIBLE);
 
-        if (isFirstLoad()) {
+        if (isEmptyRecyclerView()) {
+            progressBar.setVisibility(View.VISIBLE);
             startLoad();
         } else {
-            createRecyclerView(rootView, newsLab.getFullData());
             progressBar.setVisibility(View.GONE);
+            createRecyclerView(rootView, newsLab.getFullData());
         }
 
         return rootView;
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_LOADING, isLoading);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-
         newsLab.setFullDataMode();
-
-        if (getAdapter() != null) {
-            getAdapter().notifyData();
-        }
-
-        if (isLoading) {
+        if (isLoading()) {
             getActivity().getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
         }
     }
@@ -98,14 +91,8 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_find:
-                if (isLoading && getAdapter() != null) {
-                    getAdapter().removeProgressItem();
-                    if (getActivity().getSupportLoaderManager().getLoader(PAGE_LOADER) != null) {
-                        getActivity().getSupportLoaderManager().getLoader(PAGE_LOADER).abandon();
-                    }
-                }
-                Intent intent = new Intent(getActivity(), SearchActivity.class);
-                startActivityForResult(intent, 1);
+                Intent intent = SearchActivity.newIntent(getActivity(), url);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -113,71 +100,47 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        isLoading = false;
-    }
-
-    @Override
     public Loader<List<News>> onCreateLoader(int id, Bundle args) {
         Loader<List<News>> loader = null;
         if (id == PAGE_LOADER) {
-            loader = new HtmlPageLoader(getActivity(), PetrSU.getUrl());
+            loader = new HtmlPageLoader(getActivity(), url.get());
         }
         return loader;
     }
 
     @Override
     public void onLoadFinished(Loader<List<News>> loader, final List<News> loadData) {
-        isLoading = false;
+        setLoading(false);
 
         if (loadData == null) {
-            if (getAdapter().getData().isEmpty()) {
+            if (!hasRecyclerViewCreated()) {
                 createSnackbarReplyConnection();
             } else {
-                getAdapter().removeProgressItem();
+                removeProgressItem();
             }
             return;
         }
 
-        PetrSU.updateUrl();
+        url.update();
 
-        if (loadData.isEmpty() && PetrSU.isValidUrl()) {
+        if (loadData.isEmpty() && url.isValid()) {
             startLoad();
             return;
         }
 
-        if (getRecyclerView() == null) {
+        if (!hasRecyclerViewCreated()) {
             destroySnackBarReplyConnection();
             createRecyclerView(rootView, newsLab.getFullData());
             progressBar.setVisibility(View.GONE);
         } else {
-            getAdapter().removeProgressItem();
+            removeProgressItem();
         }
-        getAdapter().addData(loadData);
+
+        updateRecyclerView(loadData);
     }
 
     @Override
     public void onLoaderReset(Loader<List<News>> loader) {
 
-    }
-
-    @Override
-    public void createSnackbarReplyConnection() {
-        snackbar = Snackbar.make(getActivity().findViewById(R.id.activity_news_list),
-                getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.replay, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        startLoad();
-                    }
-                });
-        snackbar.show();
-    }
-
-    @Override
-    public void destroySnackBarReplyConnection() {
-        if (snackbar != null && snackbar.isShown()) {
-            snackbar.dismiss();
-        }
     }
 }
