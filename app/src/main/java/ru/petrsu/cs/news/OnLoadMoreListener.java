@@ -5,6 +5,6 @@ package ru.petrsu.cs.news;
  * Email: deniskk25@gmail.com
  */
 
-public interface OnLoadMoreListener {
+interface OnLoadMoreListener {
     void onLoadMore();
 }

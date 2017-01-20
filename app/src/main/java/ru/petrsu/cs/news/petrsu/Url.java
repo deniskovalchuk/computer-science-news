@@ -74,7 +74,4 @@ public final class Url implements Parcelable {
     public void setPrimaryYearToCurrentYear() {
         primaryYear = currentYear;
     }
-    public void setCurrentYearToPrimaryYear() {
-        currentYear = primaryYear;
-    }
 }

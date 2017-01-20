@@ -17,6 +17,7 @@ import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
+import ru.petrsu.cs.news.petrsu.BadUrlException;
 import ru.petrsu.cs.news.petrsu.Url;
 import ru.petrsu.cs.news.remote.HtmlPageLoader;
 
@@ -63,7 +64,11 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
 
         if (isEmptyRecyclerView()) {
             progressBar.setVisibility(View.VISIBLE);
-            startLoad();
+            try {
+                startLoad();
+            } catch (BadUrlException e) {
+                progressBar.setVisibility(View.GONE);
+            }
         } else {
             progressBar.setVisibility(View.GONE);
             createRecyclerView(rootView, newsLab.getFullData());
@@ -123,8 +128,12 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
 
         url.update();
 
-        if (loadData.isEmpty() && url.isValid()) {
-            startLoad();
+        if (loadData.isEmpty()) {
+            try {
+                startLoad();
+            } catch (BadUrlException ignored) {
+
+            }
             return;
         }
 

@@ -15,10 +15,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
+import ru.petrsu.cs.news.news.NewsSearcher;
+import ru.petrsu.cs.news.petrsu.BadUrlException;
 import ru.petrsu.cs.news.petrsu.Url;
 import ru.petrsu.cs.news.remote.HtmlPageLoader;
 
@@ -28,8 +31,8 @@ import ru.petrsu.cs.news.remote.HtmlPageLoader;
  */
 
 public class SearchFragment extends EndlessRecyclerViewFragment implements LoaderManager.LoaderCallbacks<List<News>> {
-    public static final String KEY_INF_TEXT = "informationText";
     private static final String TAG = "SearchFragment";
+    private static final String KEY_INF_TEXT = "informationText";
     private static final String KEY_SEARCH_QUERY = "searchQuery";
     private static final String ARG_URL = "url";
 
@@ -64,7 +67,7 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
             informationText = savedInstanceState.getString(KEY_INF_TEXT);
             setLoading(savedInstanceState.getBoolean(KEY_LOADING));
         } else {
-            newsLab.clearSearchData();
+            newsLab.clearSearchResult();
             url.setPrimaryYearToCurrentYear();
             informationText = getString(R.string.search_hint);
             setLoading(false);
@@ -79,7 +82,7 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
 
         if (!isEmptyRecyclerView()) {
             progressBar.setVisibility(View.GONE);
-            createRecyclerView(rootView, newsLab.getSearchData());
+            createRecyclerView(rootView, newsLab.getSearchResult());
         } else {
             if (isLoading()) {
                 progressBar.setVisibility(View.VISIBLE);
@@ -102,6 +105,14 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
         super.onResume();
         if (isLoading())
             getActivity().getSupportLoaderManager().initLoader(PAGE_LOADER, null, this).forceLoad();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (getActivity().isFinishing()) {
+            newsLab.clearSearchData();
+        }
     }
 
     @Override
@@ -135,20 +146,28 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchQuery = query;
-                url.setCurrentYearToPrimaryYear();
                 informationTextView.setVisibility(View.GONE);
 
                 if (hasRecyclerViewCreated()) {
                     clearRecyclerView();
                 }
 
-                List<News> searchResult = newsLab.find(query);
-                createRecyclerView(rootView, newsLab.getSearchData());
+                List<News> searchResult = new ArrayList<>();
+                searchResult.addAll(NewsSearcher.find(newsLab.getFullData(), searchQuery));
+                searchResult.addAll(NewsSearcher.find(newsLab.getSearchData(), searchQuery));
+                newsLab.updateSearchResult(searchResult);
+                createRecyclerView(rootView, newsLab.getSearchResult());
+
                 if (searchResult.isEmpty()) {
                     progressBar.setVisibility(View.VISIBLE);
-                    startLoad();
-                } else {
-                    newsLab.addDataToSearchData(searchResult);
+                    try {
+                        startLoad();
+                    } catch (BadUrlException ignored) {
+                        progressBar.setVisibility(View.GONE);
+                        informationText = getString(R.string.no_result);
+                        informationTextView.setText(informationText);
+                        informationTextView.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 return false;
@@ -170,6 +189,13 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showNoResultMessage() {
+        progressBar.setVisibility(View.GONE);
+        informationText = getString(R.string.no_result);
+        informationTextView.setText(informationText);
+        informationTextView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -196,22 +222,25 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
 
         url.update();
 
-        if (loadData.isEmpty() && url.isValid()) {
-            startLoad();
+        if (loadData.isEmpty()) {
+            try {
+                startLoad();
+            } catch (BadUrlException ignored) {
+
+            }
             return;
         }
 
-        List<News> searchResult = newsLab.find(loadData, searchQuery);
+        newsLab.updateSearchData(loadData);
+
+        List<News> searchResult = NewsSearcher.find(loadData, searchQuery);
         if (searchResult.isEmpty()) {
-            if (url.isValid()) {
+            try {
                 startLoad();
-            } else {
+            } catch (BadUrlException e) {
                 removeProgressItem();
                 if (isEmptyRecyclerView()) {
-                    progressBar.setVisibility(View.GONE);
-                    informationText = getString(R.string.no_result);
-                    informationTextView.setText(informationText);
-                    informationTextView.setVisibility(View.VISIBLE);
+                    showNoResultMessage();
                 }
             }
         } else {
@@ -225,7 +254,11 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
             updateRecyclerView(searchResult);
             if (searchResult.size() == 1) {
                 addProgressItem();
-                startLoad();
+                try {
+                    startLoad();
+                } catch (BadUrlException e) {
+                    removeProgressItem();
+                }
             }
         }
     }

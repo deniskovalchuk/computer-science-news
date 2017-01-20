@@ -18,31 +18,30 @@ import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
+import ru.petrsu.cs.news.petrsu.BadUrlException;
 import ru.petrsu.cs.news.petrsu.Url;
 
 
 /**
  * Base class for fragments contains EndlessRecyclerView with News.
- *
+ * <p>
  * Created by Kovalchuk Denis on 09.01.17.
  * Email: deniskk25@gmail.com
  */
 
-public abstract class EndlessRecyclerViewFragment extends Fragment
-        implements ManageEndlessRecyclerView {
-    private static final String TAG = "RecyclerViewFragment";
+public abstract class EndlessRecyclerViewFragment extends Fragment {
     protected static final String KEY_LOADING = "isLoading";
     protected static final String KEY_URL = "url";
     protected static final int PAGE_LOADER = 0;
+    private static final String TAG = "RecyclerViewFragment";
+    protected Url url;
     private LinearLayoutManager layoutManager;
     private RecyclerView endlessRecyclerView;
     private RecyclerViewAdapter adapter;
     private Snackbar snackbar;
-
     private boolean isLoading;
-    protected Url url;
 
-    public abstract android.support.v4.app.LoaderManager.LoaderCallbacks getLoaderContext();
+    protected abstract android.support.v4.app.LoaderManager.LoaderCallbacks getLoaderContext();
 
     protected void updateRecyclerView(List<News> data) {
         if (adapter != null) {
@@ -84,13 +83,17 @@ public abstract class EndlessRecyclerViewFragment extends Fragment
         this.isLoading = isLoading;
     }
 
-    protected void startLoad() {
+    protected void startLoad() throws BadUrlException {
+        if (!url.isValid()) {
+            throw new BadUrlException();
+        }
         isLoading = true;
         getActivity()
                 .getSupportLoaderManager()
                 .restartLoader(PAGE_LOADER, null, getLoaderContext())
                 .forceLoad();
     }
+
 
     protected void createRecyclerView(View rootView, final List<News> newsList) {
         endlessRecyclerView = (RecyclerView) rootView.findViewById(R.id.news_list);
@@ -105,7 +108,11 @@ public abstract class EndlessRecyclerViewFragment extends Fragment
             @Override
             public void onLoadMore() {
                 adapter.addProgressItem();
-                startLoad();
+                try {
+                    startLoad();
+                } catch (BadUrlException e) {
+                    adapter.removeProgressItem();
+                }
             }
         });
         endlessRecyclerView.setAdapter(adapter);
@@ -119,20 +126,22 @@ public abstract class EndlessRecyclerViewFragment extends Fragment
         outState.putParcelable(KEY_URL, url);
     }
 
-    @Override
     public void createSnackbarReplyConnection() {
         snackbar = Snackbar.make(getActivity().findViewById(R.id.activity_news_list),
                 getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.replay, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        startLoad();
+                        try {
+                            startLoad();
+                        } catch (BadUrlException ignored) {
+
+                        }
                     }
                 });
         snackbar.show();
     }
 
-    @Override
     public void destroySnackBarReplyConnection() {
         if (snackbar != null && snackbar.isShown()) {
             snackbar.dismiss();
@@ -156,8 +165,7 @@ public abstract class EndlessRecyclerViewFragment extends Fragment
                         super.onScrolled(recyclerView, dx, dy);
                         totalItemCount = layoutManager.getItemCount();
                         lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-                        if (url.isValid() && !isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
-                            isLoading = true;
+                        if (!isLoading && (totalItemCount <= (lastVisibleItem + visibleThreshold))) {
                             if (onLoadMoreListener != null) {
                                 onLoadMoreListener.onLoadMore();
                             }

@@ -1,13 +1,10 @@
 <resources>
     <string name="app_name">Новости</string>
-    <string name="default_title">"Новость от "</string>
     <string name="news_icon">news_icon</string>
     <string name="petrsu_logo">petrsu_logo</string>
     <string name="send_to">Поделиться новостью…</string>
     <string name="no_connection">No connection</string>
-    <string name="share">share</string>
     <string name="replay">Replay</string>
-    <string name="no_news">В этом году ещё нет новостей</string>
     <string name="search_hint">Введите поисковый запрос</string>
     <string name="no_result">Ничего не найдено</string>
     <string name="search">search</string>

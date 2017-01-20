@@ -12,10 +12,12 @@ public class NewsLab {
     private static final NewsLab newsLab = new NewsLab();
     private static List<News> currentData;
     private static List<News> searchData;
+    private static List<News> searchResult;
     private static List<News> fullData;
 
     private NewsLab() {
         searchData = new ArrayList<>();
+        searchResult = new ArrayList<>();
         fullData = new ArrayList<>();
         currentData = fullData;
     }
@@ -25,7 +27,7 @@ public class NewsLab {
     }
 
     public void setSearchMode() {
-        currentData = searchData;
+        currentData = searchResult;
     }
 
     public void setFullDataMode() {
@@ -40,6 +42,10 @@ public class NewsLab {
         return searchData;
     }
 
+    public List<News> getSearchResult() {
+        return searchResult;
+    }
+
     public List<News> getCurrentData() {
         return currentData;
     }
@@ -48,41 +54,19 @@ public class NewsLab {
         searchData.clear();
     }
 
+    public void clearSearchResult() {
+        searchResult.clear();
+    }
+
     public News getNews(int position) {
         return currentData.get(position);
     }
 
-    public void addDataToFullData(List<News> data) {
-        fullData.addAll(data);
-    }
-
-    public void addDataToSearchData(List<News> data) {
+    public void updateSearchData(List<News> data) {
         searchData.addAll(data);
     }
 
-    public List<News> find(String query) {
-        return find(fullData, query);
-    }
-
-    public List<News> find(List<News> data, String query) {
-        List<News> searchResult = new ArrayList<>();
-
-        if (query == null) {
-            return searchResult;
-        }
-
-        query = query.toUpperCase();
-        for (News news : data) {
-            if (news == null) {
-                continue;
-            }
-
-            String content = news.getContent().toUpperCase();
-
-            if (content.contains(query)) {
-                searchResult.add(news);
-            }
-        }
-        return searchResult;
+    public void updateSearchResult(List<News> data) {
+        searchResult.addAll(data);
     }
 }
