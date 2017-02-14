@@ -12,8 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,27 +19,26 @@ import java.util.List;
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
 import ru.petrsu.cs.news.news.NewsSearcher;
-import ru.petrsu.cs.news.petrsu.BadUrlException;
 import ru.petrsu.cs.news.petrsu.Url;
 import ru.petrsu.cs.news.remote.HtmlPageLoader;
 
+
 /**
- * Created by Kovalchuk Denis on 09.01.17.
- * Email: deniskk25@gmail.com
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public class SearchFragment extends EndlessRecyclerViewFragment implements LoaderManager.LoaderCallbacks<List<News>> {
-    private static final String TAG = "SearchFragment";
-    private static final String KEY_INF_TEXT = "informationText";
+    private static final String KEY_INF_TEXT_RESOURCE = "informationText";
+    private static final String KEY_SEARCH_VIEW_TEXT = "searchViewText";
     private static final String KEY_SEARCH_QUERY = "searchQuery";
     private static final String ARG_URL = "url";
 
-    private TextView informationTextView;
-    private ProgressBar progressBar;
-    private View rootView;
+    private SearchView searchView;
 
+    private int informationTextResource;
     private String searchQuery;
-    private String informationText;
+    private String searchViewText;
     private NewsLab newsLab;
 
     public static SearchFragment newInstance(Url url) {
@@ -62,36 +59,30 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
         url = new Url((Url) getArguments().getParcelable(ARG_URL));
 
         if (savedInstanceState != null) {
+            searchViewText = savedInstanceState.getString(KEY_SEARCH_VIEW_TEXT);
             searchQuery = savedInstanceState.getString(KEY_SEARCH_QUERY);
             url = savedInstanceState.getParcelable(KEY_URL);
-            informationText = savedInstanceState.getString(KEY_INF_TEXT);
+            informationTextResource = savedInstanceState.getInt(KEY_INF_TEXT_RESOURCE);
             setLoading(savedInstanceState.getBoolean(KEY_LOADING));
         } else {
             newsLab.clearSearchResult();
-            url.setPrimaryYearToCurrentYear();
-            informationText = getString(R.string.search_hint);
+            informationTextResource = R.string.search_hint;
             setLoading(false);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_news_list, container, false);
-        progressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
-        informationTextView = (TextView) rootView.findViewById(R.id.information_text_view);
-
-        if (!isEmptyRecyclerView()) {
-            progressBar.setVisibility(View.GONE);
-            createRecyclerView(rootView, newsLab.getSearchResult());
-        } else {
+        View rootView = initView(R.layout.fragment_news_list, inflater, container);
+        if (isEmptyRecyclerView()) {
             if (isLoading()) {
-                progressBar.setVisibility(View.VISIBLE);
+                showCentralProgressBar();
             } else {
-                informationTextView.setVisibility(View.VISIBLE);
-                informationTextView.setText(informationText);
+                showInformationTextView(informationTextResource);
             }
+        } else {
+            showRecyclerView(newsLab.getSearchResult());
         }
-
         return rootView;
     }
 
@@ -119,9 +110,10 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(KEY_SEARCH_QUERY, searchQuery);
-        outState.putParcelable(KEY_URL, url);
+        outState.putString(KEY_SEARCH_VIEW_TEXT, searchView.getQuery().toString());
+        outState.putParcelable(KEY_URL, getUrl());
         outState.putBoolean(KEY_LOADING, isLoading());
-        outState.putString(KEY_INF_TEXT, informationText);
+        outState.putInt(KEY_INF_TEXT_RESOURCE, informationTextResource);
     }
 
     @Override
@@ -129,15 +121,14 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.search_menu, menu);
 
-        SearchView searchView = (SearchView) menu.findItem(R.id.search_bar).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.search_bar).getActionView();
         searchView.setIconifiedByDefault(false);
         searchView.setIconified(false);
         searchView.setMaxWidth(Integer.MAX_VALUE);
 
-        if (searchQuery != null)
-            searchView.setQuery(searchQuery, false);
+        if (searchViewText != null)
+            searchView.setQuery(searchViewText, false);
 
-        /* remove a search icon  */
         ImageView searchViewIcon = (ImageView) searchView.findViewById(android.support.v7.appcompat.R.id.search_mag_icon);
         ViewGroup linearLayoutSearchView = (ViewGroup) searchViewIcon.getParent();
         linearLayoutSearchView.removeView(searchViewIcon);
@@ -146,36 +137,30 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchQuery = query;
-                informationTextView.setVisibility(View.GONE);
 
-                if (hasRecyclerViewCreated()) {
+                if (wasRecyclerViewCreated()) {
                     clearRecyclerView();
                 }
 
                 List<News> searchResult = new ArrayList<>();
                 searchResult.addAll(NewsSearcher.find(newsLab.getFullData(), searchQuery));
                 searchResult.addAll(NewsSearcher.find(newsLab.getSearchData(), searchQuery));
-                newsLab.updateSearchResult(searchResult);
-                createRecyclerView(rootView, newsLab.getSearchResult());
-
                 if (searchResult.isEmpty()) {
-                    progressBar.setVisibility(View.VISIBLE);
-                    try {
+                    if (isValidUrl()) {
                         startLoad();
-                    } catch (BadUrlException ignored) {
-                        progressBar.setVisibility(View.GONE);
-                        informationText = getString(R.string.no_result);
-                        informationTextView.setText(informationText);
-                        informationTextView.setVisibility(View.VISIBLE);
+                    } else {
+                        informationTextResource = R.string.no_result;
+                        showInformationTextView(informationTextResource);
                     }
+                } else {
+                    newsLab.updateSearchResult(searchResult);
+                    showRecyclerView(newsLab.getSearchResult());
                 }
-
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                searchQuery = newText;
                 return false;
             }
         });
@@ -191,18 +176,11 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
         return super.onOptionsItemSelected(item);
     }
 
-    private void showNoResultMessage() {
-        progressBar.setVisibility(View.GONE);
-        informationText = getString(R.string.no_result);
-        informationTextView.setText(informationText);
-        informationTextView.setVisibility(View.VISIBLE);
-    }
-
     @Override
     public Loader onCreateLoader(int id, Bundle args) {
         Loader<List<News>> loader = null;
         if (id == PAGE_LOADER) {
-            loader = new HtmlPageLoader(getActivity(), url.get());
+            loader = new HtmlPageLoader(getActivity(), url.toString());
         }
         return loader;
     }
@@ -210,55 +188,40 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
     @Override
     public void onLoadFinished(Loader<List<News>> loader, List<News> loadData) {
         setLoading(false);
-
         if (loadData == null) {
-            if (!hasRecyclerViewCreated()) {
-                createSnackbarReplyConnection();
+            if (!wasRecyclerViewCreated()) {
+                showLoadError();
             } else {
                 removeProgressItem();
             }
             return;
         }
-
-        url.update();
-
+        updateUrl();
         if (loadData.isEmpty()) {
-            try {
-                startLoad();
-            } catch (BadUrlException ignored) {
-
-            }
+            startLoad();
             return;
         }
-
         newsLab.updateSearchData(loadData);
-
         List<News> searchResult = NewsSearcher.find(loadData, searchQuery);
         if (searchResult.isEmpty()) {
-            try {
+            if (isValidUrl()) {
                 startLoad();
-            } catch (BadUrlException e) {
+            } else {
                 removeProgressItem();
                 if (isEmptyRecyclerView()) {
-                    showNoResultMessage();
+                    informationTextResource = R.string.no_result;
+                    showInformationTextView(informationTextResource);
                 }
             }
         } else {
-            progressBar.setVisibility(View.GONE);
-            if (!hasRecyclerViewCreated()) {
-                destroySnackBarReplyConnection();
-                createRecyclerView(rootView, newsLab.getSearchData());
+            if (!wasRecyclerViewCreated()) {
+                showRecyclerView(newsLab.getSearchResult());
             } else {
                 removeProgressItem();
             }
             updateRecyclerView(searchResult);
             if (searchResult.size() == 1) {
-                addProgressItem();
-                try {
-                    startLoad();
-                } catch (BadUrlException e) {
-                    removeProgressItem();
-                }
+                startLoad();
             }
         }
     }

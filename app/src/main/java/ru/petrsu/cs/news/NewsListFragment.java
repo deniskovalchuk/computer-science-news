@@ -11,28 +11,22 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 
 import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
-import ru.petrsu.cs.news.petrsu.BadUrlException;
 import ru.petrsu.cs.news.petrsu.Url;
 import ru.petrsu.cs.news.remote.HtmlPageLoader;
 
+
 /**
- * Created by Kovalchuk Denis on 09.01.17.
- * Email: deniskk25@gmail.com
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public class NewsListFragment extends EndlessRecyclerViewFragment
         implements LoaderManager.LoaderCallbacks<List<News>> {
-    private static final String TAG = "NewsListFragment";
-
-    private ProgressBar progressBar;
-    private View rootView;
-
     private NewsLab newsLab;
 
     @Override
@@ -46,32 +40,25 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
 
         newsLab = NewsLab.getInstance();
         newsLab.setFullDataMode();
-
-        url = new Url();
+        setLoading(false);
 
         if (savedInstanceState != null) {
             url = savedInstanceState.getParcelable(KEY_URL);
+            setLoading(savedInstanceState.getBoolean(KEY_LOADING));
         }
-
-        setLoading(savedInstanceState != null && savedInstanceState.getBoolean(KEY_LOADING));
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_news_list, container, false);
-        progressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
+        View rootView = initView(R.layout.fragment_news_list, inflater, container);
 
         if (isEmptyRecyclerView()) {
-            progressBar.setVisibility(View.VISIBLE);
-            try {
-                startLoad();
-            } catch (BadUrlException e) {
-                progressBar.setVisibility(View.GONE);
-            }
+            url = new Url();
+            showCentralProgressBar();
+            startLoad();
         } else {
-            progressBar.setVisibility(View.GONE);
-            createRecyclerView(rootView, newsLab.getFullData());
+            showRecyclerView(newsLab.getFullData());
         }
 
         return rootView;
@@ -96,7 +83,7 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_find:
-                Intent intent = SearchActivity.newIntent(getActivity(), url);
+                Intent intent = SearchActivity.newIntent(getActivity(), getUrl());
                 startActivity(intent);
                 return true;
             default:
@@ -108,7 +95,7 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
     public Loader<List<News>> onCreateLoader(int id, Bundle args) {
         Loader<List<News>> loader = null;
         if (id == PAGE_LOADER) {
-            loader = new HtmlPageLoader(getActivity(), url.get());
+            loader = new HtmlPageLoader(getActivity(), getUrl().toString());
         }
         return loader;
     }
@@ -116,35 +103,24 @@ public class NewsListFragment extends EndlessRecyclerViewFragment
     @Override
     public void onLoadFinished(Loader<List<News>> loader, final List<News> loadData) {
         setLoading(false);
-
         if (loadData == null) {
-            if (!hasRecyclerViewCreated()) {
-                createSnackbarReplyConnection();
+            if (!wasRecyclerViewCreated()) {
+                showLoadError();
             } else {
                 removeProgressItem();
             }
             return;
         }
-
-        url.update();
-
+        updateUrl();
         if (loadData.isEmpty()) {
-            try {
-                startLoad();
-            } catch (BadUrlException ignored) {
-
-            }
+            startLoad();
             return;
         }
-
-        if (!hasRecyclerViewCreated()) {
-            destroySnackBarReplyConnection();
-            createRecyclerView(rootView, newsLab.getFullData());
-            progressBar.setVisibility(View.GONE);
+        if (!wasRecyclerViewCreated()) {
+            showRecyclerView(newsLab.getFullData());
         } else {
             removeProgressItem();
         }
-
         updateRecyclerView(loadData);
     }
 

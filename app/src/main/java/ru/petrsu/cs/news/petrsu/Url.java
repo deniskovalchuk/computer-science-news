@@ -7,8 +7,11 @@ import java.util.Calendar;
 
 
 /**
- * Created by Kovalchuk Denis on 13.12.16.
- * Email: deniskk25@gmail.com
+ * This class presents current url of page for downloading. Sending
+ * {@link ru.petrsu.cs.news.SearchActivity} from {@link ru.petrsu.cs.news.NewsListActivity}.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public final class Url implements Parcelable {
@@ -16,18 +19,19 @@ public final class Url implements Parcelable {
     private static final String defaultUrl = "http://cs.petrsu.ru";
     private static final String filenameExtensionXml = ".xml";
     private static final int minimumYear = 2002;
+    /**
+     * Year for formation of url.
+     */
     private int currentYear;
-    private int primaryYear;
     private String url;
 
     public Url() {
-        primaryYear = currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        currentYear = Calendar.getInstance().get(Calendar.YEAR);
         url = defaultUrl + archivePath + Integer.toString(currentYear) + filenameExtensionXml;
     }
 
     public Url(Url in) {
         currentYear = in.currentYear;
-        primaryYear = in.primaryYear;
         url = in.url;
     }
 
@@ -59,19 +63,19 @@ public final class Url implements Parcelable {
         dest.writeString(url);
     }
 
+    /**
+     * Update url for downloading previous data.
+     */
     public void update() {
         url = defaultUrl + archivePath + Integer.toString(--currentYear) + filenameExtensionXml;
     }
 
-    public String get() {
+    @Override
+    public String toString() {
         return url;
     }
 
     public boolean isValid() {
         return currentYear >= minimumYear;
-    }
-
-    public void setPrimaryYearToCurrentYear() {
-        primaryYear = currentYear;
     }
 }

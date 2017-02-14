@@ -15,8 +15,8 @@ import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
 
 /**
- * Created by Kovalchuk Denis on 28.11.16.
- * Email: deniskk25@gmail.com
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public class NewsDetailActivity extends AppCompatActivity {

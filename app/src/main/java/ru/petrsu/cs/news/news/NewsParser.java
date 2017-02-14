@@ -12,11 +12,25 @@ import java.util.List;
 
 
 /**
- * Created by Kovalchuk Denis on 17.01.17.
- * Email: deniskk25@gmail.com
+ * Html parser for news pages of http://cs.petrsu.ru.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public final class NewsParser {
+    public static final String TAG = "NewsParser";
+
+    private NewsParser() {
+
+    }
+
+    /**
+     * Create news list using download html page.
+     *
+     * @param document Html page contains news.
+     * @return data News list.
+     */
     public static List<News> createNewsList(Document document) {
         Elements allNews = document.select("div[id]");
         List<News> data = new ArrayList<>();
@@ -32,20 +46,36 @@ public final class NewsParser {
         return data;
     }
 
+    /**
+     * @param newsHtml Html of a news.
+     * @return title News title. May be empty.
+     */
     private static String parseTitle(Element newsHtml) {
         return newsHtml.select("span.title").text();
     }
 
+    /**
+     * @param newsHtml Html of a news.
+     * @return date News date.
+     */
     private static String parseDate(Element newsHtml) {
-        return newsHtml.select("b").text();
+        return newsHtml.select("b").get(0).text();
     }
 
+    /**
+     * Get content from news without media data (img/video).
+     *
+     * @param newsHtml Html of a news.
+     * @return content News content.
+     */
     private static String parseContent(Element newsHtml) {
-        String contentWithoutImg = newsHtml.toString().replaceAll("<img.+?>", "");
+        String contentWithoutMedia = newsHtml.toString();
+        contentWithoutMedia = contentWithoutMedia.replaceAll("<img[\\s\\S]*?>", "");
+        contentWithoutMedia = contentWithoutMedia.replaceAll("<video[\\s\\S]*?</video>", "");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Html.fromHtml(contentWithoutImg, Html.FROM_HTML_MODE_LEGACY).toString();
+            return Html.fromHtml(contentWithoutMedia, Html.FROM_HTML_MODE_LEGACY).toString();
         } else {
-            return Html.fromHtml(contentWithoutImg).toString();
+            return Html.fromHtml(contentWithoutMedia).toString();
         }
     }
 }

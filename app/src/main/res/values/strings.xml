@@ -3,9 +3,10 @@
     <string name="news_icon">news_icon</string>
     <string name="petrsu_logo">petrsu_logo</string>
     <string name="send_to">Поделиться новостью…</string>
-    <string name="no_connection">No connection</string>
-    <string name="replay">Replay</string>
-    <string name="search_hint">Введите поисковый запрос</string>
-    <string name="no_result">Ничего не найдено</string>
+    <string name="no_connection"><b>Во время загрузки произошла ошибка.</b>\n
+        Попробуйте обновить страницу позже</string>
+    <string name="replay">ОБНОВИТЬ</string>
+    <string name="search_hint"><b>Введите поисковый запрос</b></string>
+    <string name="no_result"><b>Ничего не найдено</b></string>
     <string name="search">search</string>
 </resources>

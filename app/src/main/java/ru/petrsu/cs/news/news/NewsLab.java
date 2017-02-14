@@ -4,15 +4,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Kovalchuk Denis on 22.11.16.
- * Email: deniskk25@gmail.com
+ * Use this class for control news data.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public class NewsLab {
-    private static final NewsLab newsLab = new NewsLab();
+    private static NewsLab newsLab;
+
+    /**
+     * Links to {@link #fullData} or {@link #searchResult} according to current activity.
+     */
     private static List<News> currentData;
+
+    /**
+     * Data obtained during search, without filtration.
+     */
     private static List<News> searchData;
+
+    /**
+     * Data obtained during search, with filtration, shown on {@link ru.petrsu.cs.news.SearchActivity}
+     */
     private static List<News> searchResult;
+
+    /**
+     * Data shown on {@link ru.petrsu.cs.news.NewsListActivity }
+     */
     private static List<News> fullData;
 
     private NewsLab() {
@@ -23,13 +41,22 @@ public class NewsLab {
     }
 
     public static NewsLab getInstance() {
+        if (newsLab == null) {
+            newsLab = new NewsLab();
+        }
         return newsLab;
     }
 
+    /**
+     * Call this method, when start {@link ru.petrsu.cs.news.SearchActivity}
+     */
     public void setSearchMode() {
         currentData = searchResult;
     }
 
+    /**
+     * Call this method, when start {@link ru.petrsu.cs.news.NewsListActivity}
+     */
     public void setFullDataMode() {
         currentData = fullData;
     }

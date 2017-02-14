@@ -6,8 +6,10 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 
 /**
- * Created by Kovalchuk Denis on 22.11.16.
- * Email: deniskk25@gmail.com
+ * Represents html page of http://cs.petrsu.ru.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 class HtmlPage {

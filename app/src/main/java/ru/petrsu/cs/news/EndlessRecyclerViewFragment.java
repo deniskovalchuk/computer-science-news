@@ -2,8 +2,9 @@ package ru.petrsu.cs.news;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,30 +19,66 @@ import java.util.List;
 
 import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsLab;
-import ru.petrsu.cs.news.petrsu.BadUrlException;
 import ru.petrsu.cs.news.petrsu.Url;
 
 
 /**
- * Base class for fragments contains EndlessRecyclerView with News.
- * <p>
- * Created by Kovalchuk Denis on 09.01.17.
- * Email: deniskk25@gmail.com
+ * Base class for fragments containing {@link #endlessRecyclerView} with News.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public abstract class EndlessRecyclerViewFragment extends Fragment {
     protected static final String KEY_LOADING = "isLoading";
     protected static final String KEY_URL = "url";
     protected static final int PAGE_LOADER = 0;
-    private static final String TAG = "RecyclerViewFragment";
-    protected Url url;
+
     private LinearLayoutManager layoutManager;
     private RecyclerView endlessRecyclerView;
     private RecyclerViewAdapter adapter;
-    private Snackbar snackbar;
+    private View rootView;
+    private ProgressBar centralProgressBar;
+    private TextView informationTextView;
+    private TextView replayLoadTextView;
+
     private boolean isLoading;
+    protected Url url;
 
     protected abstract android.support.v4.app.LoaderManager.LoaderCallbacks getLoaderContext();
+
+    protected View initView(int resource, LayoutInflater inflater, ViewGroup container) {
+        rootView = inflater.inflate(resource, container, false);
+        centralProgressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
+        informationTextView = (TextView) rootView.findViewById(R.id.information_text_view);
+        replayLoadTextView = (TextView) rootView.findViewById(R.id.replay_load_text_view);
+        replayLoadTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    startLoad();
+            }
+        });
+        return rootView;
+    }
+
+    protected void showCentralProgressBar() {
+        if (endlessRecyclerView != null) {
+            endlessRecyclerView.setVisibility(View.GONE);
+        }
+        informationTextView.setVisibility(View.GONE);
+        replayLoadTextView.setVisibility(View.GONE);
+        centralProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    protected void showInformationTextView(int textResource) {
+        if (endlessRecyclerView != null) {
+            endlessRecyclerView.setVisibility(View.GONE);
+        }
+        centralProgressBar.setVisibility(View.GONE);
+        replayLoadTextView.setVisibility(View.GONE);
+        informationTextView.setText(getText(textResource));
+        informationTextView.setVisibility(View.VISIBLE);
+    }
 
     protected void updateRecyclerView(List<News> data) {
         if (adapter != null) {
@@ -55,7 +92,7 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
         }
     }
 
-    protected boolean hasRecyclerViewCreated() {
+    protected boolean wasRecyclerViewCreated() {
         return endlessRecyclerView != null;
     }
 
@@ -63,10 +100,11 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
         return NewsLab.getInstance().getCurrentData().isEmpty();
     }
 
-    protected void addProgressItem() {
-        if (adapter != null) {
-            adapter.addProgressItem();
-        }
+    private boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     protected void removeProgressItem() {
@@ -83,10 +121,19 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
         this.isLoading = isLoading;
     }
 
-    protected void startLoad() throws BadUrlException {
-        if (!url.isValid()) {
-            throw new BadUrlException();
+    protected void startLoad() {
+        if (!isOnline()) {
+            removeProgressItem();
+            if (isEmptyRecyclerView()) {
+                showLoadError();
+            }
+            return;
         }
+        if (!isValidUrl()) {
+            removeProgressItem();
+            return;
+        }
+        showProgressLoad();
         isLoading = true;
         getActivity()
                 .getSupportLoaderManager()
@@ -94,8 +141,32 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
                 .forceLoad();
     }
 
+    private void showProgressLoad() {
+        if (adapter != null) {
+            adapter.addProgressItem();
+        } else {
+            showCentralProgressBar();
+        }
+    }
 
-    protected void createRecyclerView(View rootView, final List<News> newsList) {
+    protected Url getUrl() {
+        return url;
+    }
+
+    protected boolean isValidUrl() {
+        return url != null && url.isValid();
+    }
+
+    protected void updateUrl() {
+        if (url != null) {
+            url.update();
+        }
+    }
+
+    protected void showRecyclerView(final List<News> newsList) {
+        centralProgressBar.setVisibility(View.GONE);
+        informationTextView.setVisibility(View.GONE);
+        replayLoadTextView.setVisibility(View.GONE);
         endlessRecyclerView = (RecyclerView) rootView.findViewById(R.id.news_list);
         endlessRecyclerView.setHasFixedSize(true);
 
@@ -107,12 +178,7 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
         adapter.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore() {
-                adapter.addProgressItem();
-                try {
-                    startLoad();
-                } catch (BadUrlException e) {
-                    adapter.removeProgressItem();
-                }
+                startLoad();
             }
         });
         endlessRecyclerView.setAdapter(adapter);
@@ -126,26 +192,9 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
         outState.putParcelable(KEY_URL, url);
     }
 
-    public void createSnackbarReplyConnection() {
-        snackbar = Snackbar.make(getActivity().findViewById(R.id.activity_news_list),
-                getString(R.string.no_connection), Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.replay, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        try {
-                            startLoad();
-                        } catch (BadUrlException ignored) {
-
-                        }
-                    }
-                });
-        snackbar.show();
-    }
-
-    public void destroySnackBarReplyConnection() {
-        if (snackbar != null && snackbar.isShown()) {
-            snackbar.dismiss();
-        }
+    public void showLoadError() {
+        showInformationTextView(R.string.no_connection);
+        replayLoadTextView.setVisibility(View.VISIBLE);
     }
 
     protected class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -210,7 +259,8 @@ public abstract class EndlessRecyclerViewFragment extends Fragment {
         }
 
         void addProgressItem() {
-            if (newsList != null) {
+            if (newsList != null && newsList.size() > 0
+                    && newsList.get(newsList.size() - 1) != null) {
                 newsList.add(null);
                 notifyItemInserted(newsList.size() - 1);
             }

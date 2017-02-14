@@ -14,12 +14,14 @@ import ru.petrsu.cs.news.news.NewsLab;
 import ru.petrsu.cs.news.petrsu.Url;
 
 /**
- * Created by Kovalchuk Denis on 28.11.16.
- * Email: deniskk25@gmail.com
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public class NewsDetailFragment extends Fragment {
-    private static final String ARG_NEWS_ID = "item_id";
+    private static final String ARG_NEWS_ID = "itemId";
+
+    private WebView webView;
 
     private static News news;
     private Url url;
@@ -52,11 +54,19 @@ public class NewsDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.news_detail, container, false);
+
         if (news != null) {
-            WebView webView = (WebView) rootView.findViewById(R.id.fragment_detail_web_view);
-            webView.loadDataWithBaseURL(url.get(), news.getHtml(),
+            webView = (WebView) rootView.findViewById(R.id.news_web_view);
+            webView.loadDataWithBaseURL(url.toString(), news.getHtml(),
                     "text/html; charset = utf-8;", "utf-8", null);
         }
+
         return rootView;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        webView.onPause();
     }
 }

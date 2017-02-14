@@ -7,12 +7,21 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
 /**
- * Created by Kovalchuk Denis on 09.01.17.
- * Email: deniskk25@gmail.com
+ * Base class for activity containing single fragment.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public abstract class SingleFragmentActivity extends AppCompatActivity {
+    /**
+     * @return fragment Fragment contains in activity.
+     */
     protected abstract Fragment getFragment();
+
+    /**
+     * Creates application bar current activity.
+     */
     protected abstract void createAppBar();
 
     @Override

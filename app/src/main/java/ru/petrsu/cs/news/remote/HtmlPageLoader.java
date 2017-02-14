@@ -12,8 +12,10 @@ import ru.petrsu.cs.news.news.News;
 import ru.petrsu.cs.news.news.NewsParser;
 
 /**
- * Created by Kovalchuk Denis on 22.11.16.
- * Email: deniskk25@gmail.com
+ * Loader for html pages of http://cs.petrsu.ru.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 public class HtmlPageLoader extends AsyncTaskLoader {

@@ -1,8 +1,10 @@
 package ru.petrsu.cs.news;
 
 /**
- * Created by Kovalchuk Denis on 22.12.16.
- * Email: deniskk25@gmail.com
+ * Interface for downloading new data when scrolling {@link EndlessRecyclerViewFragment#endlessRecyclerView}.
+ *
+ * @author Kovalchuk Denis
+ * @version 1.0
  */
 
 interface OnLoadMoreListener {

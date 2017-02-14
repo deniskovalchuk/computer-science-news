@@ -8,6 +8,7 @@
 
     <!-- text sizes -->
     <dimen name="item_title_text_size">16sp</dimen>
+    <dimen name="replay_text_view">24sp</dimen>
 
     <!-- AppBar -->
     <dimen name="app_bar_height">290dp</dimen>

@@ -4,8 +4,7 @@
     android:background="@android:color/white">
 
     <WebView
-        android:id="@+id/fragment_detail_web_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/standard_margin"/>
+        android:id="@+id/news_web_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </android.support.v4.widget.NestedScrollView>
