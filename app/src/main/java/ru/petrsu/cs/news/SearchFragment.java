@@ -56,7 +56,7 @@ public class SearchFragment extends EndlessRecyclerViewFragment implements Loade
 
         newsLab = NewsLab.getInstance();
         newsLab.setSearchMode();
-        url = new Url((Url) getArguments().getParcelable(ARG_URL));
+        url = getArguments().getParcelable(ARG_URL);
 
         if (savedInstanceState != null) {
             searchViewText = savedInstanceState.getString(KEY_SEARCH_VIEW_TEXT);

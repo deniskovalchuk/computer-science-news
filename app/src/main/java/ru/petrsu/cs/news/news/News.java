@@ -1,5 +1,8 @@
 package ru.petrsu.cs.news.news;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * This class represents any news on http://cs.petrsu.ru.
  *
@@ -7,7 +10,7 @@ package ru.petrsu.cs.news.news;
  * @version 1.0
  */
 
-public class News {
+public class News implements Parcelable {
     /**
      * Some news don't have titles, in case the title will consist of defaultTitle and news date.
      */
@@ -34,6 +37,24 @@ public class News {
         this.content = content;
     }
 
+    private News(Parcel in) {
+        html = in.readString();
+        title = in.readString();
+        content = in.readString();
+    }
+
+    public static final Creator<News> CREATOR = new Creator<News>() {
+        @Override
+        public News createFromParcel(Parcel in) {
+            return new News(in);
+        }
+
+        @Override
+        public News[] newArray(int size) {
+            return new News[size];
+        }
+    };
+
     public String getHtml() {
         return html;
     }
@@ -44,5 +65,17 @@ public class News {
 
     public String getContent() {
         return content;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(html);
+        dest.writeString(title);
+        dest.writeString(content);
     }
 }

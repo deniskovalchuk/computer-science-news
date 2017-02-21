@@ -16,7 +16,7 @@ import java.util.Calendar;
 
 public final class Url implements Parcelable {
     private static final String archivePath = "/news/archive.php.ru?q=news";
-    private static final String defaultUrl = "http://cs.petrsu.ru";
+    private static final String baseUrl = "http://cs.petrsu.ru";
     private static final String filenameExtensionXml = ".xml";
     private static final int minimumYear = 2002;
     /**
@@ -27,12 +27,7 @@ public final class Url implements Parcelable {
 
     public Url() {
         currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        url = defaultUrl + archivePath + Integer.toString(currentYear) + filenameExtensionXml;
-    }
-
-    public Url(Url in) {
-        currentYear = in.currentYear;
-        url = in.url;
+        url = baseUrl + archivePath + Integer.toString(currentYear) + filenameExtensionXml;
     }
 
     private Url(Parcel in) {
@@ -63,11 +58,15 @@ public final class Url implements Parcelable {
         dest.writeString(url);
     }
 
+    public static String getBaseUrl() {
+        return baseUrl;
+    }
+
     /**
      * Update url for downloading previous data.
      */
     public void update() {
-        url = defaultUrl + archivePath + Integer.toString(--currentYear) + filenameExtensionXml;
+        url = baseUrl + archivePath + Integer.toString(--currentYear) + filenameExtensionXml;
     }
 
     @Override
